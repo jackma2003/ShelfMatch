@@ -19,9 +19,16 @@ export function Navbar() {
 
   return (
     <nav className="flex items-center justify-between border-b px-6 py-4">
-      <Link href="/dashboard" className="font-semibold">
-        ShelfMatch
-      </Link>
+      <div className="flex items-center gap-6">
+        <Link href="/dashboard" className="font-semibold">
+          ShelfMatch
+        </Link>
+        {user && (
+          <Link href="/pantry" className="text-muted-foreground hover:text-foreground text-sm">
+            Pantry
+          </Link>
+        )}
+      </div>
       {user && (
         <div className="flex items-center gap-4">
           <span className="text-muted-foreground text-sm">{user.name}</span>

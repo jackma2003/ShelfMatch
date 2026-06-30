@@ -4,6 +4,7 @@ import express from "express";
 
 import { errorHandler } from "./middleware/error-handler.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { pantryRouter } from "./routes/pantry.routes.js";
 
 export function createApp() {
   const app = express();
@@ -22,6 +23,7 @@ export function createApp() {
   });
 
   app.use("/api/auth", authRouter);
+  app.use("/api/pantry", pantryRouter);
 
   app.use(errorHandler);
 
