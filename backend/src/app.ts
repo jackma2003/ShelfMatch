@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 
 import { errorHandler } from "./middleware/error-handler.js";
+import { authRouter } from "./routes/auth.routes.js";
 
 export function createApp() {
   const app = express();
@@ -19,6 +20,8 @@ export function createApp() {
   app.get("/health", (_req, res) => {
     res.status(200).json({ status: "ok" });
   });
+
+  app.use("/api/auth", authRouter);
 
   app.use(errorHandler);
 
