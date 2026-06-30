@@ -1,0 +1,15 @@
+# OS
+.DS_Store
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env files (per-app .gitignore handles the rest; this is a safety net for the root)
+.env
+.env.local
