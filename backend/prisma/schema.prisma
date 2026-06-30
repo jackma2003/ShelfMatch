@@ -13,3 +13,128 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum PantryCategory {
+  PRODUCE
+  DAIRY
+  MEAT_SEAFOOD
+  GRAIN_BREAD
+  CANNED_JARRED
+  CONDIMENT_SAUCE
+  SPICE_SEASONING
+  BAKING
+  FROZEN
+  BEVERAGE
+  OTHER
+}
+
+enum RecipeDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum RecipeSource {
+  AI
+  EXTERNAL
+  SEED
+}
+
+enum SavedRecipeStatus {
+  FAVORITE
+  COOKED
+  PLANNED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  pantryItems       PantryItem[]
+  savedRecipes      SavedRecipe[]
+  shoppingListItems ShoppingListItem[]
+
+  @@map("users")
+}
+
+model PantryItem {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  quantity       Float
+  unit           String
+  category       PantryCategory @default(OTHER)
+  expirationDate DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([userId])
+  @@map("pantry_items")
+}
+
+model Recipe {
+  id              String           @id @default(cuid())
+  title           String
+  description     String
+  instructions    String[]
+  imageUrl        String?
+  cookTimeMinutes Int
+  difficulty      RecipeDifficulty @default(MEDIUM)
+  source          RecipeSource     @default(AI)
+  createdAt       DateTime         @default(now())
+
+  ingredients       RecipeIngredient[]
+  savedBy           SavedRecipe[]
+  shoppingListItems ShoppingListItem[]
+
+  @@map("recipes")
+}
+
+model RecipeIngredient {
+  id         String  @id @default(cuid())
+  recipeId   String
+  recipe     Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  name       String
+  quantity   Float
+  unit       String
+  isOptional Boolean @default(false)
+
+  @@index([recipeId])
+  @@map("recipe_ingredients")
+}
+
+model SavedRecipe {
+  id       String            @id @default(cuid())
+  userId   String
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipeId String
+  recipe   Recipe            @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  status   SavedRecipeStatus @default(FAVORITE)
+  savedAt  DateTime          @default(now())
+
+  @@unique([userId, recipeId])
+  @@index([userId])
+  @@map("saved_recipes")
+}
+
+model ShoppingListItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipeId  String?
+  recipe    Recipe?  @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  name      String
+  quantity  Float
+  unit      String
+  isChecked Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("shopping_list_items")
+}

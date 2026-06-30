@@ -8,10 +8,12 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "lint": "eslint src",
-    "typecheck": "tsc --noEmit",
+    "lint": "eslint src prisma/seed.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p prisma/tsconfig.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "db:seed": "prisma db seed",
+    "db:migrate": "prisma migrate dev",
     "test": "echo \"no tests yet\" && exit 0"
   },
   "keywords": [],
@@ -19,6 +21,7 @@
   "license": "ISC",
   "description": "ShelfMatch REST API",
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
