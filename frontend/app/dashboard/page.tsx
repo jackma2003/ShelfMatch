@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { Navbar } from "@/components/layout/navbar";
+import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/use-auth";
 
 function DashboardContent() {
@@ -22,9 +24,10 @@ function DashboardContent() {
           </p>
         )}
         <h1 className="text-2xl font-semibold">Welcome back, {user?.name}.</h1>
-        <p className="text-muted-foreground mt-2">
-          Pantry management and recipe generation land in the next phases.
-        </p>
+        <p className="text-muted-foreground mt-2">What can you make right now?</p>
+        <Button render={<Link href="/recipes/generate" />} nativeButton={false} className="mt-4">
+          Generate meals
+        </Button>
       </main>
     </div>
   );

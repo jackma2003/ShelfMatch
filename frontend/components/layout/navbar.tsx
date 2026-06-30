@@ -24,9 +24,26 @@ export function Navbar() {
           ShelfMatch
         </Link>
         {user && (
-          <Link href="/pantry" className="text-muted-foreground hover:text-foreground text-sm">
-            Pantry
-          </Link>
+          <>
+            <Link href="/pantry" className="text-muted-foreground hover:text-foreground text-sm">
+              Pantry
+            </Link>
+            <Link
+              href="/recipes/generate"
+              className="text-muted-foreground hover:text-foreground text-sm"
+            >
+              Recipes
+            </Link>
+            <Link href="/saved" className="text-muted-foreground hover:text-foreground text-sm">
+              Saved
+            </Link>
+            <Link
+              href="/shopping-list"
+              className="text-muted-foreground hover:text-foreground text-sm"
+            >
+              Shopping List
+            </Link>
+          </>
         )}
       </div>
       {user && (
