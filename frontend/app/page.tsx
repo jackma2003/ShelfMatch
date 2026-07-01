@@ -26,7 +26,7 @@ export default function Home() {
       {/* Nav strip */}
       <header className="flex items-center justify-between px-6 py-4">
         <span className="flex items-center gap-2 font-bold text-lg">
-          <span className="text-2xl">🍳</span>
+          <img src="/icon.svg" className="size-7" alt="ShelfMatch" />
           <span className="text-primary">ShelfMatch</span>
         </span>
         <Link

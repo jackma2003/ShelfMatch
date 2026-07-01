@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         href="/"
         className="mb-8 flex items-center gap-2 text-xl font-bold text-primary hover:opacity-80 transition-opacity"
       >
-        <span className="text-2xl">🍳</span> ShelfMatch
+        <img src="/icon.svg" className="size-7" alt="ShelfMatch" /> ShelfMatch
       </Link>
       {children}
     </div>

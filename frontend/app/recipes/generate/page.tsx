@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { Navbar } from "@/components/layout/navbar";
 import { RecipeCard } from "@/components/recipes/recipe-card";
 import { Button } from "@/components/ui/button";
-import { useGenerateRecipes } from "@/hooks/use-recipes";
+import { type Recipe, useGenerateRecipes } from "@/hooks/use-recipes";
 import { ApiError } from "@/lib/api-client";
+
+const STORAGE_KEY = "shelfmatch:generated-recipes";
 
 const FRIENDLY_ERRORS: Record<string, string> = {
   EMPTY_PANTRY: "Add some items to your pantry first, then come back to generate meals.",
@@ -30,6 +33,26 @@ function LoadingSkeleton() {
 
 function GenerateContent() {
   const generate = useGenerateRecipes();
+
+  const [persistedRecipes, setPersistedRecipes] = useState<Recipe[] | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? (JSON.parse(stored) as Recipe[]) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (generate.isSuccess) {
+      const recipes = generate.data.recipes;
+      setPersistedRecipes(recipes);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
+    }
+  }, [generate.isSuccess, generate.data]);
+
+  const displayedRecipes = generate.isSuccess ? generate.data.recipes : persistedRecipes;
 
   const errorMessage =
     generate.error instanceof ApiError
@@ -85,9 +108,9 @@ function GenerateContent() {
         )}
 
         {/* Empty / initial state */}
-        {!generate.isPending && !generate.isError && !generate.isSuccess && (
+        {!generate.isPending && !generate.isError && !displayedRecipes && (
           <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed py-20 text-center">
-            <span className="text-5xl">🍳</span>
+            <img src="/icon.svg" className="size-16" alt="" />
             <div>
               <p className="font-medium">Ready when you are</p>
               <p className="mt-1 text-sm text-muted-foreground max-w-xs mx-auto">
@@ -98,14 +121,14 @@ function GenerateContent() {
         )}
 
         {/* Results */}
-        {generate.isSuccess && (
+        {!generate.isPending && !generate.isError && displayedRecipes && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Found {generate.data.recipes.length} meal
-              {generate.data.recipes.length !== 1 ? "s" : ""} you can make right now.
+              Found {displayedRecipes.length} meal
+              {displayedRecipes.length !== 1 ? "s" : ""} you can make right now.
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
-              {generate.data.recipes.map((recipe) => (
+              {displayedRecipes.map((recipe) => (
                 <RecipeCard key={recipe.id} recipe={recipe} />
               ))}
             </div>

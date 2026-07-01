@@ -56,7 +56,7 @@ export function Navbar() {
           href="/dashboard"
           className="flex items-center gap-2 font-bold text-base hover:opacity-80 transition-opacity"
         >
-          <span className="text-xl">🍳</span>
+          <img src="/icon.svg" className="size-6" alt="ShelfMatch" />
           <span className="text-primary">ShelfMatch</span>
         </Link>
 

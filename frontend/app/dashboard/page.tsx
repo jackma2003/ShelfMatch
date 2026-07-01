@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { ChefHat, Package, Heart, ShoppingCart } from "lucide-react";
 
 import { AuthGuard } from "@/components/layout/auth-guard";
@@ -20,7 +20,7 @@ const QUICK_ACTIONS = [
   {
     href: "/recipes/generate",
     icon: ChefHat,
-    emoji: "🍳",
+    emoji: <img src="/icon.svg" className="size-5" alt="" />,
     title: "Generate meals",
     description: "See what you can cook from your pantry right now.",
     accent: "bg-primary text-primary-foreground",
@@ -53,21 +53,29 @@ const QUICK_ACTIONS = [
     accent: "bg-green-100 text-green-700",
     primary: false,
   },
-] as const;
+];
 
 function DashboardContent() {
   const { data: user } = useMe();
   const searchParams = useSearchParams();
   const justVerified = searchParams.get("verified") === "true";
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   return (
     <div>
       <Navbar />
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
-        {justVerified && (
-          <p className="rounded-xl border border-green-600/20 bg-green-50 px-4 py-3 text-sm text-green-700">
-            🎉 Email verified — welcome to ShelfMatch!
-          </p>
+        {justVerified && !bannerDismissed && (
+          <div className="flex items-center justify-between rounded-xl border border-green-600/20 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <span>🎉 Email verified — welcome to ShelfMatch!</span>
+            <button
+              onClick={() => setBannerDismissed(true)}
+              className="ml-4 text-green-600 hover:text-green-800"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
         )}
 
         {/* Greeting */}
