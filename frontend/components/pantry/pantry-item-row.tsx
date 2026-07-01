@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { PantryItemForm } from "@/components/pantry/pantry-item-form";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useDeletePantryItem, useUpdatePantryItem, type PantryItem } from "@/hooks/use-pantry";
 import type { PantryItemFormValues } from "@/lib/validators/pantry";
+import { cn } from "@/lib/utils";
 
 function daysUntil(dateString: string): number {
   const today = new Date();
@@ -22,21 +22,34 @@ function daysUntil(dateString: string): number {
   return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function ExpirationBadge({ expirationDate }: { expirationDate: string | null }) {
+function ExpiryPill({ expirationDate }: { expirationDate: string | null }) {
   if (!expirationDate) return null;
-
   const days = daysUntil(expirationDate);
+
   const label =
     days < 0
       ? "Expired"
       : days === 0
-        ? "Expires today"
+        ? "Today"
         : days === 1
-          ? "Expires tomorrow"
-          : `Expires in ${days}d`;
-  const variant = days <= 2 ? "destructive" : "secondary";
+          ? "Tomorrow"
+          : `${days}d`;
 
-  return <Badge variant={variant}>{label}</Badge>;
+  const urgent = days <= 2;
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+        urgent
+          ? "bg-red-100 text-red-700"
+          : "bg-amber-100/70 text-amber-700",
+      )}
+    >
+      {urgent ? "⚠ " : "🗓 "}
+      {label}
+    </span>
+  );
 }
 
 export function PantryItemRow({ item }: { item: PantryItem }) {
@@ -52,17 +65,19 @@ export function PantryItemRow({ item }: { item: PantryItem }) {
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 border-b py-3 last:border-b-0">
-      <div className="min-w-0">
-        <p className="truncate font-medium">{item.name}</p>
-        <p className="text-muted-foreground text-sm">
+    <div className="group flex items-center justify-between gap-3 border-b py-3 last:border-b-0">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="font-medium truncate">{item.name}</p>
+          <ExpiryPill expirationDate={item.expirationDate} />
+        </div>
+        <p className="mt-0.5 text-sm text-muted-foreground">
           {item.quantity} {item.unit}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <ExpirationBadge expirationDate={item.expirationDate} />
+      <div className="flex shrink-0 items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogTrigger render={<Button variant="outline" size="sm" />}>Edit</DialogTrigger>
+          <DialogTrigger render={<Button variant="ghost" size="sm" />}>Edit</DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit {item.name}</DialogTitle>
@@ -85,6 +100,7 @@ export function PantryItemRow({ item }: { item: PantryItem }) {
           variant="ghost"
           size="sm"
           disabled={deleteItem.isPending}
+          className="text-muted-foreground hover:text-destructive"
           onClick={() => deleteItem.mutate(item.id)}
         >
           Delete

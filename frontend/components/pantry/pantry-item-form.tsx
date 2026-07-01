@@ -67,31 +67,43 @@ export function PantryItemForm({
   return (
     <form onSubmit={handleSubmit(submit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2 space-y-2">
-          <Label htmlFor={nameId}>Name</Label>
-          <Input id={nameId} placeholder="e.g. Eggs" {...register("name")} />
+        <div className="col-span-2 space-y-1.5">
+          <Label htmlFor={nameId}>Item name</Label>
+          <Input id={nameId} placeholder="e.g. Eggs" className="h-10" {...register("name")} />
           {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor={quantityId}>Quantity</Label>
-          <Input id={quantityId} type="number" step="any" {...register("quantity")} />
+          <Input
+            id={quantityId}
+            type="number"
+            step="any"
+            placeholder="0"
+            className="h-10"
+            {...register("quantity")}
+          />
           {errors.quantity && (
             <p className="text-destructive text-sm">{errors.quantity.message}</p>
           )}
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor={unitId}>Unit</Label>
-          <Input id={unitId} placeholder="e.g. pieces" {...register("unit")} />
+          <Input
+            id={unitId}
+            placeholder="e.g. pieces"
+            className="h-10"
+            {...register("unit")}
+          />
           {errors.unit && <p className="text-destructive text-sm">{errors.unit.message}</p>}
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor={categoryId}>Category</Label>
           <Controller
             name="category"
             control={control}
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id={categoryId} className="w-full">
+                <SelectTrigger id={categoryId} className="w-full h-10">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -105,12 +117,17 @@ export function PantryItemForm({
             )}
           />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor={expirationDateId}>Expires (optional)</Label>
-          <Input id={expirationDateId} type="date" {...register("expirationDate")} />
+          <Input
+            id={expirationDateId}
+            type="date"
+            className="h-10"
+            {...register("expirationDate")}
+          />
         </div>
       </div>
-      <Button type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending} className="h-9">
         {isPending ? "Saving..." : submitLabel}
       </Button>
     </form>

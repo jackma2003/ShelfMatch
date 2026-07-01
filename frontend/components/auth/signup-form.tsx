@@ -31,17 +31,22 @@ export function SignupForm() {
 
   if (submittedEmail) {
     return (
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-sm shadow-lg shadow-foreground/5">
         <CardHeader>
-          <CardTitle>Check your email</CardTitle>
+          <div className="mb-2 text-4xl">📬</div>
+          <CardTitle className="text-xl font-bold">Check your inbox</CardTitle>
           <CardDescription>
-            We sent a verification link to <span className="font-medium">{submittedEmail}</span>.
+            We sent a verification link to{" "}
+            <span className="font-medium text-foreground">{submittedEmail}</span>.
             Click it to activate your account, then log in.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Link href="/login" className="text-foreground text-sm underline underline-offset-4">
-            Back to log in
+          <Link
+            href="/login"
+            className="text-sm font-medium text-primary hover:underline underline-offset-4"
+          >
+            ← Back to log in
           </Link>
         </CardContent>
       </Card>
@@ -49,29 +54,45 @@ export function SignupForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>Create your account</CardTitle>
+    <Card className="w-full max-w-sm shadow-lg shadow-foreground/5">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-xl font-bold">Create your account</CardTitle>
         <CardDescription>Start turning what&apos;s in your kitchen into meals.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-5">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" type="text" autoComplete="name" {...register("name")} />
+            <Input
+              id="name"
+              type="text"
+              autoComplete="name"
+              className="h-10"
+              placeholder="Your name"
+              {...register("name")}
+            />
             {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" {...register("email")} />
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              className="h-10"
+              placeholder="you@example.com"
+              {...register("email")}
+            />
             {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
               autoComplete="new-password"
+              className="h-10"
+              placeholder="••••••••"
               {...register("password")}
             />
             {errors.password && (
@@ -79,23 +100,23 @@ export function SignupForm() {
             )}
           </div>
           {signup.isError && (
-            <p className="text-sm text-destructive">
+            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {signup.error instanceof ApiError ? signup.error.message : "Something went wrong"}
             </p>
           )}
-          <Button type="submit" className="w-full" disabled={signup.isPending}>
-            {signup.isPending ? "Creating account..." : "Sign up"}
+          <Button type="submit" className="w-full h-10" disabled={signup.isPending}>
+            {signup.isPending ? "Creating account..." : "Create account"}
           </Button>
         </form>
-        <div className="my-4 flex items-center gap-3">
-          <div className="bg-border h-px flex-1" />
-          <span className="text-muted-foreground text-xs">OR</span>
-          <div className="bg-border h-px flex-1" />
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <div className="h-px flex-1 bg-border" />
         </div>
         <GoogleButton />
-        <p className="text-muted-foreground mt-4 text-center text-sm">
+        <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-foreground underline underline-offset-4">
+          <Link href="/login" className="font-medium text-primary hover:underline underline-offset-4">
             Log in
           </Link>
         </p>

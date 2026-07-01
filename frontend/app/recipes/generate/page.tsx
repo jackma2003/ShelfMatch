@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Sparkles } from "lucide-react";
 
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { Navbar } from "@/components/layout/navbar";
@@ -17,6 +18,16 @@ const FRIENDLY_ERRORS: Record<string, string> = {
   AI_EMPTY_RESPONSE: "The AI didn't return anything. Try again.",
 };
 
+function LoadingSkeleton() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="h-52 rounded-2xl bg-muted animate-pulse" />
+      ))}
+    </div>
+  );
+}
+
 function GenerateContent() {
   const generate = useGenerateRecipes();
 
@@ -28,41 +39,76 @@ function GenerateContent() {
   return (
     <div>
       <Navbar />
-      <main className="mx-auto max-w-3xl space-y-6 p-6">
-        <div className="flex items-center justify-between">
+      <main className="mx-auto max-w-3xl space-y-8 px-6 py-10">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">What can I make right now?</h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              We&apos;ll suggest meals based on what&apos;s in your pantry.
+            <h1 className="text-2xl font-bold tracking-tight">What can I make?</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              ShelfMatch will suggest meals based on what&apos;s in your pantry.
             </p>
           </div>
-          <Button onClick={() => generate.mutate()} disabled={generate.isPending}>
+          <Button
+            onClick={() => generate.mutate()}
+            disabled={generate.isPending}
+            className="shrink-0 gap-2"
+            size="lg"
+          >
+            <Sparkles className="size-4" />
             {generate.isPending ? "Thinking..." : "Generate meals"}
           </Button>
         </div>
 
+        {/* Error state */}
         {generate.isError && (
-          <div className="space-y-2">
-            <p className="text-destructive text-sm">{errorMessage}</p>
+          <div className="rounded-xl bg-destructive/10 px-4 py-3 space-y-2">
+            <p className="text-sm text-destructive font-medium">{errorMessage}</p>
             {generate.error instanceof ApiError && generate.error.code === "EMPTY_PANTRY" && (
-              <Link href="/pantry" className="text-foreground text-sm underline underline-offset-4">
-                Go to pantry
+              <Link
+                href="/pantry"
+                className="text-sm font-medium text-primary hover:underline underline-offset-4"
+              >
+                → Go to pantry
               </Link>
             )}
           </div>
         )}
 
+        {/* Loading */}
         {generate.isPending && (
-          <p className="text-muted-foreground text-sm">
-            Looking at your pantry and dreaming up some meals...
-          </p>
+          <>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Looking at your pantry and dreaming up something delicious...
+            </p>
+            <LoadingSkeleton />
+          </>
         )}
 
+        {/* Empty / initial state */}
+        {!generate.isPending && !generate.isError && !generate.isSuccess && (
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed py-20 text-center">
+            <span className="text-5xl">🍳</span>
+            <div>
+              <p className="font-medium">Ready when you are</p>
+              <p className="mt-1 text-sm text-muted-foreground max-w-xs mx-auto">
+                Hit &ldquo;Generate meals&rdquo; and we&apos;ll suggest recipes based on what&apos;s in your pantry.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Results */}
         {generate.isSuccess && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {generate.data.recipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
-            ))}
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Found {generate.data.recipes.length} meal
+              {generate.data.recipes.length !== 1 ? "s" : ""} you can make right now.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {generate.data.recipes.map((recipe) => (
+                <RecipeCard key={recipe.id} recipe={recipe} />
+              ))}
+            </div>
           </div>
         )}
       </main>
