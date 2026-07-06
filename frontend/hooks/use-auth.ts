@@ -9,10 +9,11 @@ export interface User {
   name: string;
   avatarUrl: string | null;
   emailVerified: boolean;
+  hasPassword: boolean;
   createdAt: string;
 }
 
-const ME_QUERY_KEY = ["auth", "me"];
+export const ME_QUERY_KEY = ["auth", "me"];
 
 export function useMe() {
   return useQuery<User>({

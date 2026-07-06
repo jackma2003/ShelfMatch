@@ -14,12 +14,13 @@ import type { LoginInput, ResendVerificationInput, SignupInput } from "../valida
 const SALT_ROUNDS = 10;
 const API_URL = process.env.API_URL ?? "http://localhost:4000";
 
-function toPublicUser(user: {
+export function toPublicUser(user: {
   id: string;
   email: string;
   name: string;
   avatarUrl: string | null;
   emailVerified: boolean;
+  passwordHash: string | null;
   createdAt: Date;
 }) {
   return {
@@ -28,6 +29,7 @@ function toPublicUser(user: {
     name: user.name,
     avatarUrl: user.avatarUrl,
     emailVerified: user.emailVerified,
+    hasPassword: user.passwordHash !== null,
     createdAt: user.createdAt,
   };
 }

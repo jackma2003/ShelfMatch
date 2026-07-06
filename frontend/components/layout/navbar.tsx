@@ -73,7 +73,12 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           {user && (
             <>
-              <span className="hidden md:block text-sm text-muted-foreground">{user.name}</span>
+              <Link
+                href="/settings"
+                className="hidden md:block text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {user.name}
+              </Link>
               <Button
                 variant="outline"
                 size="sm"
@@ -108,7 +113,13 @@ export function Navbar() {
             />
           ))}
           <div className="pt-3 border-t mt-3 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">{user.name}</span>
+            <Link
+              href="/settings"
+              onClick={() => setMobileOpen(false)}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {user.name}
+            </Link>
             <Button
               variant="outline"
               size="sm"

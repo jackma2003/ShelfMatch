@@ -29,10 +29,20 @@ export interface Recipe {
   totalCount: number;
 }
 
+export type DietaryTag = "vegetarian" | "vegan" | "gluten-free";
+
+export interface GenerateRecipesFilters {
+  maxCookTimeMinutes?: number;
+  dietaryTag?: DietaryTag;
+}
+
 export function useGenerateRecipes() {
   return useMutation({
-    mutationFn: () =>
-      apiFetch<{ recipes: Recipe[] }>("/api/recipes/generate", { method: "POST" }),
+    mutationFn: (filters: GenerateRecipesFilters = {}) =>
+      apiFetch<{ recipes: Recipe[] }>("/api/recipes/generate", {
+        method: "POST",
+        body: JSON.stringify(filters),
+      }),
   });
 }
 

@@ -1,9 +1,11 @@
 import type { Request, Response } from "express";
 
 import * as recipeService from "../services/recipe-generation.service.js";
+import type { GenerateRecipesInput } from "../validators/recipe.validators.js";
 
 export async function generateRecipesHandler(req: Request, res: Response) {
-  const recipes = await recipeService.generateRecipes(req.userId!);
+  const filters = req.body as GenerateRecipesInput;
+  const recipes = await recipeService.generateRecipes(req.userId!, filters);
   res.status(201).json({ recipes });
 }
 

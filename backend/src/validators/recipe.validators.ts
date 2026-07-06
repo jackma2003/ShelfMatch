@@ -25,3 +25,17 @@ export const aiRecipesResponseSchema = z.object({
 });
 
 export type AiRecipe = z.infer<typeof aiRecipeSchema>;
+
+// Optional filters for POST /api/recipes/generate. Kept deliberately small — two knobs,
+// not a full cuisine/diet matrix — since the goal is "feels tailored," not a filter form.
+// Preprocessed so a truly bodyless POST (req.body undefined, e.g. no Content-Type sent)
+// is treated the same as an empty filter set rather than a validation error.
+export const generateRecipesRequestSchema = z.preprocess(
+  (val) => val ?? {},
+  z.object({
+    maxCookTimeMinutes: z.number().int().positive().max(180).optional(),
+    dietaryTag: z.enum(["vegetarian", "vegan", "gluten-free"]).optional(),
+  }),
+);
+
+export type GenerateRecipesInput = z.infer<typeof generateRecipesRequestSchema>;

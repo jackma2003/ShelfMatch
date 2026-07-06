@@ -3,25 +3,38 @@ import { createHash } from "node:crypto";
 import { generateJson } from "../lib/gemini.js";
 import { withMatchInfo } from "../lib/ingredient-matching.js";
 import { prisma } from "../lib/prisma.js";
+import { getRecipeImageUrl } from "../lib/unsplash.js";
 import { HttpError } from "../middleware/error-handler.js";
-import { aiRecipesResponseSchema, type AiRecipe } from "../validators/recipe.validators.js";
+import {
+  aiRecipesResponseSchema,
+  type AiRecipe,
+  type GenerateRecipesInput,
+} from "../validators/recipe.validators.js";
 
 // Identical pantries within this window reuse the same generated recipes instead of
 // re-hitting Gemini and writing duplicate Recipe rows every time "Generate meals" is clicked.
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
-function hashPantry(
+// Filters are folded into the cache key alongside the pantry — otherwise a cached batch
+// generated without filters would incorrectly be served back for a filtered request.
+function hashRequest(
   pantryItems: { name: string; quantity: number; unit: string }[],
+  filters: GenerateRecipesInput,
 ): string {
-  const normalized = pantryItems
+  const normalizedPantry = pantryItems
     .map((item) => `${item.name.trim().toLowerCase()}|${item.quantity}|${item.unit.trim().toLowerCase()}`)
     .sort()
     .join("\n");
-  return createHash("sha256").update(normalized).digest("hex");
+  const normalizedFilters = JSON.stringify({
+    maxCookTimeMinutes: filters.maxCookTimeMinutes ?? null,
+    dietaryTag: filters.dietaryTag ?? null,
+  });
+  return createHash("sha256").update(`${normalizedPantry}\n${normalizedFilters}`).digest("hex");
 }
 
 function buildPrompt(
   pantryItems: { name: string; quantity: number; unit: string; expirationDate: Date | null }[],
+  filters: GenerateRecipesInput,
 ): string {
   const now = Date.now();
   const pantryDescription = pantryItems
@@ -34,6 +47,14 @@ function buildPrompt(
     })
     .join("\n");
 
+  const filterInstructions: string[] = [];
+  if (filters.maxCookTimeMinutes) {
+    filterInstructions.push(`Keep total cook time under ${filters.maxCookTimeMinutes} minutes.`);
+  }
+  if (filters.dietaryTag) {
+    filterInstructions.push(`Every recipe must be ${filters.dietaryTag}.`);
+  }
+
   return `You are a practical home cooking assistant. A user has the following ingredients in their kitchen:
 
 ${pantryDescription || "(no ingredients logged yet)"}
@@ -42,6 +63,7 @@ Suggest 3 to 5 realistic, cookable meals that primarily use these ingredients. P
 1. Use ingredients marked "(expiring soon)" first, to help reduce food waste.
 2. Minimize the number of additional ingredients not already listed above.
 3. Are realistic for a home cook to actually make tonight.
+${filterInstructions.map((instruction) => `${instruction}`).join("\n")}
 
 Respond with ONLY valid JSON (no markdown code fences, no commentary) matching exactly this shape:
 {
@@ -60,7 +82,7 @@ Respond with ONLY valid JSON (no markdown code fences, no commentary) matching e
 }`;
 }
 
-async function persistRecipe(recipe: AiRecipe) {
+async function persistRecipe(recipe: AiRecipe, imageUrl: string | null) {
   return prisma.recipe.create({
     data: {
       title: recipe.title,
@@ -69,6 +91,7 @@ async function persistRecipe(recipe: AiRecipe) {
       cookTimeMinutes: recipe.cookTimeMinutes,
       difficulty: recipe.difficulty,
       source: "AI",
+      imageUrl,
       ingredients: {
         create: recipe.ingredients.map((ingredient) => ({
           name: ingredient.name,
@@ -100,7 +123,7 @@ async function getCachedBatch(userId: string, pantryHash: string) {
   return ordered.length > 0 ? ordered : null;
 }
 
-export async function generateRecipes(userId: string) {
+export async function generateRecipes(userId: string, filters: GenerateRecipesInput = {}) {
   const pantryItems = await prisma.pantryItem.findMany({ where: { userId } });
 
   if (pantryItems.length === 0) {
@@ -108,14 +131,14 @@ export async function generateRecipes(userId: string) {
   }
 
   const pantryNames = pantryItems.map((item) => item.name);
-  const pantryHash = hashPantry(pantryItems);
+  const requestHash = hashRequest(pantryItems, filters);
 
-  const cached = await getCachedBatch(userId, pantryHash);
+  const cached = await getCachedBatch(userId, requestHash);
   if (cached) {
     return cached.map((recipe) => withMatchInfo(recipe, pantryNames));
   }
 
-  const prompt = buildPrompt(pantryItems);
+  const prompt = buildPrompt(pantryItems, filters);
   const rawText = await generateJson(prompt);
 
   let parsed: unknown;
@@ -130,10 +153,15 @@ export async function generateRecipes(userId: string) {
     throw new HttpError(502, "AI service response didn't match the expected format", "AI_INVALID_SHAPE");
   }
 
-  const persisted = await Promise.all(result.data.recipes.map(persistRecipe));
+  const imageUrls = await Promise.all(
+    result.data.recipes.map((recipe) => getRecipeImageUrl(recipe.title)),
+  );
+  const persisted = await Promise.all(
+    result.data.recipes.map((recipe, i) => persistRecipe(recipe, imageUrls[i])),
+  );
 
   await prisma.recipeGenerationBatch.create({
-    data: { userId, pantryHash, recipeIds: persisted.map((recipe) => recipe.id) },
+    data: { userId, pantryHash: requestHash, recipeIds: persisted.map((recipe) => recipe.id) },
   });
 
   return persisted.map((recipe) => withMatchInfo(recipe, pantryNames));

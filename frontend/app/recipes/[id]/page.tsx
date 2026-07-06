@@ -57,6 +57,14 @@ function RecipeDetailContent() {
         Back
       </button>
 
+      {recipe.imageUrl && (
+        <img
+          src={recipe.imageUrl}
+          alt=""
+          className="h-48 w-full rounded-2xl object-cover sm:h-64"
+        />
+      )}
+
       {/* Header */}
       <div className="space-y-4">
         <div>

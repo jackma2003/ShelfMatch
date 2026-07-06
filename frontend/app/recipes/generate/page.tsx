@@ -2,16 +2,24 @@
 
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { Navbar } from "@/components/layout/navbar";
 import { RecipeCard } from "@/components/recipes/recipe-card";
 import { Button } from "@/components/ui/button";
-import { type Recipe, useGenerateRecipes } from "@/hooks/use-recipes";
+import { FilterButton } from "@/components/ui/filter-button";
+import { type DietaryTag, type Recipe, useGenerateRecipes } from "@/hooks/use-recipes";
 import { ApiError } from "@/lib/api-client";
 
 const STORAGE_KEY = "shelfmatch:generated-recipes";
+
+const DIETARY_TAGS: { value: DietaryTag | undefined; label: string }[] = [
+  { value: undefined, label: "Any diet" },
+  { value: "vegetarian", label: "Vegetarian" },
+  { value: "vegan", label: "Vegan" },
+  { value: "gluten-free", label: "Gluten-free" },
+];
 
 const FRIENDLY_ERRORS: Record<string, string> = {
   EMPTY_PANTRY: "Add some items to your pantry first, then come back to generate meals.",
@@ -33,6 +41,8 @@ function LoadingSkeleton() {
 
 function GenerateContent() {
   const generate = useGenerateRecipes();
+  const [quickOnly, setQuickOnly] = useState(false);
+  const [dietaryTag, setDietaryTag] = useState<DietaryTag | undefined>(undefined);
 
   const [persistedRecipes, setPersistedRecipes] = useState<Recipe[] | null>(() => {
     if (typeof window === "undefined") return null;
@@ -44,20 +54,24 @@ function GenerateContent() {
     }
   });
 
-  useEffect(() => {
-    if (generate.isSuccess) {
-      const recipes = generate.data.recipes;
-      setPersistedRecipes(recipes);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
-    }
-  }, [generate.isSuccess, generate.data]);
-
   const displayedRecipes = generate.isSuccess ? generate.data.recipes : persistedRecipes;
 
   const errorMessage =
     generate.error instanceof ApiError
       ? (generate.error.code && FRIENDLY_ERRORS[generate.error.code]) || generate.error.message
       : "Something went wrong";
+
+  const handleGenerate = () => {
+    generate.mutate(
+      { maxCookTimeMinutes: quickOnly ? 20 : undefined, dietaryTag },
+      {
+        onSuccess: ({ recipes }) => {
+          setPersistedRecipes(recipes);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
+        },
+      },
+    );
+  };
 
   return (
     <div>
@@ -72,7 +86,7 @@ function GenerateContent() {
             </p>
           </div>
           <Button
-            onClick={() => generate.mutate()}
+            onClick={handleGenerate}
             disabled={generate.isPending}
             className="shrink-0 gap-2"
             size="lg"
@@ -80,6 +94,29 @@ function GenerateContent() {
             <Sparkles className="size-4" />
             {generate.isPending ? "Thinking..." : "Generate meals"}
           </Button>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4">
+          <div className="flex items-center gap-2">
+            <FilterButton active={!quickOnly} onClick={() => setQuickOnly(false)}>
+              Any time
+            </FilterButton>
+            <FilterButton active={quickOnly} onClick={() => setQuickOnly(true)}>
+              Quick (~20 min)
+            </FilterButton>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {DIETARY_TAGS.map((tag) => (
+              <FilterButton
+                key={tag.label}
+                active={dietaryTag === tag.value}
+                onClick={() => setDietaryTag(tag.value)}
+              >
+                {tag.label}
+              </FilterButton>
+            ))}
+          </div>
         </div>
 
         {/* Error state */}

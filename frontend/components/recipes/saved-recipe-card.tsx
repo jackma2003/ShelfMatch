@@ -29,6 +29,13 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
 
   return (
     <div className="group flex flex-col gap-3 rounded-2xl bg-card p-5 ring-1 ring-border transition-all hover:ring-primary/30 sm:flex-row sm:items-start">
+      {recipe.imageUrl && (
+        <img
+          src={recipe.imageUrl}
+          alt=""
+          className="h-32 w-full shrink-0 rounded-xl object-cover sm:h-20 sm:w-20"
+        />
+      )}
       {/* Content */}
       <div className="flex-1 min-w-0 space-y-1">
         <Link

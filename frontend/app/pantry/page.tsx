@@ -6,33 +6,9 @@ import { PantryItemForm } from "@/components/pantry/pantry-item-form";
 import { PantryList } from "@/components/pantry/pantry-list";
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { Navbar } from "@/components/layout/navbar";
+import { FilterButton } from "@/components/ui/filter-button";
 import { useCreatePantryItem } from "@/hooks/use-pantry";
 import type { PantryItemFormValues } from "@/lib/validators/pantry";
-import { cn } from "@/lib/utils";
-
-function FilterButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "rounded-full px-4 py-1.5 text-sm font-medium transition-all",
-        active
-          ? "bg-primary text-primary-foreground shadow-sm"
-          : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 function PantryContent() {
   const [sortExpiring, setSortExpiring] = useState(false);

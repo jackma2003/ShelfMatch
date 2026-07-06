@@ -8,6 +8,7 @@ import { pantryRouter } from "./routes/pantry.routes.js";
 import { recipeRouter } from "./routes/recipe.routes.js";
 import { savedRecipeRouter } from "./routes/saved-recipe.routes.js";
 import { shoppingListRouter } from "./routes/shopping-list.routes.js";
+import { userRouter } from "./routes/user.routes.js";
 
 export function createApp() {
   const app = express();
@@ -30,6 +31,7 @@ export function createApp() {
   app.use("/api/recipes", recipeRouter);
   app.use("/api/saved", savedRecipeRouter);
   app.use("/api/shopping-list", shoppingListRouter);
+  app.use("/api/users", userRouter);
 
   app.use(errorHandler);
 
