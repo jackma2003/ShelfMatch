@@ -1,8 +1,24 @@
+import { createHash } from "node:crypto";
+
 import { generateJson } from "../lib/gemini.js";
 import { withMatchInfo } from "../lib/ingredient-matching.js";
 import { prisma } from "../lib/prisma.js";
 import { HttpError } from "../middleware/error-handler.js";
 import { aiRecipesResponseSchema, type AiRecipe } from "../validators/recipe.validators.js";
+
+// Identical pantries within this window reuse the same generated recipes instead of
+// re-hitting Gemini and writing duplicate Recipe rows every time "Generate meals" is clicked.
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+function hashPantry(
+  pantryItems: { name: string; quantity: number; unit: string }[],
+): string {
+  const normalized = pantryItems
+    .map((item) => `${item.name.trim().toLowerCase()}|${item.quantity}|${item.unit.trim().toLowerCase()}`)
+    .sort()
+    .join("\n");
+  return createHash("sha256").update(normalized).digest("hex");
+}
 
 function buildPrompt(
   pantryItems: { name: string; quantity: number; unit: string; expirationDate: Date | null }[],
@@ -66,11 +82,37 @@ async function persistRecipe(recipe: AiRecipe) {
   });
 }
 
+async function getCachedBatch(userId: string, pantryHash: string) {
+  const batch = await prisma.recipeGenerationBatch.findFirst({
+    where: { userId, pantryHash, createdAt: { gte: new Date(Date.now() - CACHE_TTL_MS) } },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!batch) return null;
+
+  const recipes = await prisma.recipe.findMany({
+    where: { id: { in: batch.recipeIds } },
+    include: { ingredients: true },
+  });
+  // findMany doesn't preserve `in` order, so re-sort to match the batch's original order.
+  const byId = new Map(recipes.map((recipe) => [recipe.id, recipe]));
+  const ordered = batch.recipeIds.map((id) => byId.get(id)).filter((r): r is NonNullable<typeof r> => r != null);
+
+  return ordered.length > 0 ? ordered : null;
+}
+
 export async function generateRecipes(userId: string) {
   const pantryItems = await prisma.pantryItem.findMany({ where: { userId } });
 
   if (pantryItems.length === 0) {
     throw new HttpError(400, "Add some pantry items before generating recipes", "EMPTY_PANTRY");
+  }
+
+  const pantryNames = pantryItems.map((item) => item.name);
+  const pantryHash = hashPantry(pantryItems);
+
+  const cached = await getCachedBatch(userId, pantryHash);
+  if (cached) {
+    return cached.map((recipe) => withMatchInfo(recipe, pantryNames));
   }
 
   const prompt = buildPrompt(pantryItems);
@@ -89,7 +131,10 @@ export async function generateRecipes(userId: string) {
   }
 
   const persisted = await Promise.all(result.data.recipes.map(persistRecipe));
-  const pantryNames = pantryItems.map((item) => item.name);
+
+  await prisma.recipeGenerationBatch.create({
+    data: { userId, pantryHash, recipeIds: persisted.map((recipe) => recipe.id) },
+  });
 
   return persisted.map((recipe) => withMatchInfo(recipe, pantryNames));
 }

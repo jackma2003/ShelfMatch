@@ -57,10 +57,11 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  pantryItems            PantryItem[]
-  savedRecipes           SavedRecipe[]
-  shoppingListItems      ShoppingListItem[]
-  emailVerificationToken EmailVerificationToken?
+  pantryItems             PantryItem[]
+  savedRecipes            SavedRecipe[]
+  shoppingListItems       ShoppingListItem[]
+  emailVerificationToken  EmailVerificationToken?
+  recipeGenerationBatches RecipeGenerationBatch[]
 
   @@map("users")
 }
@@ -135,6 +136,18 @@ model SavedRecipe {
   @@unique([userId, recipeId])
   @@index([userId])
   @@map("saved_recipes")
+}
+
+model RecipeGenerationBatch {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pantryHash String
+  recipeIds  String[]
+  createdAt  DateTime @default(now())
+
+  @@index([userId, pantryHash])
+  @@map("recipe_generation_batches")
 }
 
 model ShoppingListItem {
