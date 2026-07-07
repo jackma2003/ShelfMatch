@@ -65,12 +65,26 @@ export function useUpdatePantryItem() {
 export function useDeletePantryItem() {
   const queryClient = useQueryClient();
   const toastManager = useToastManager();
+  const createItem = useCreatePantryItem();
   return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<{ success: true }>(`/api/pantry/${id}`, { method: "DELETE" }),
-    onSuccess: () => {
+    mutationFn: (item: PantryItem) =>
+      apiFetch<{ success: true }>(`/api/pantry/${item.id}`, { method: "DELETE" }),
+    onSuccess: (_data, item) => {
       queryClient.invalidateQueries({ queryKey: PANTRY_QUERY_KEY });
-      toastManager.add({ title: "Removed from pantry" });
+      toastManager.add({
+        title: "Removed from pantry",
+        actionProps: {
+          children: "Undo",
+          onClick: () =>
+            createItem.mutate({
+              name: item.name,
+              quantity: item.quantity,
+              unit: item.unit,
+              category: item.category,
+              expirationDate: item.expirationDate ?? undefined,
+            }),
+        },
+      });
     },
   });
 }

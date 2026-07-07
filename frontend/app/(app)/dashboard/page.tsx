@@ -76,10 +76,12 @@ function DashboardContent() {
 
       {/* Greeting */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight">
           {user?.name ? greeting(user.name) + "." : "Welcome back."}
         </h1>
-        <p className="text-muted-foreground mt-1.5">What are you in the mood to cook today?</p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          What are you in the mood to cook today?
+        </p>
       </div>
 
       <GenerateCta />

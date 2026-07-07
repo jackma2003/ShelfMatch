@@ -53,7 +53,7 @@ export function ShoppingListItemRow({ item }: { item: ShoppingListItem }) {
         variant="ghost"
         size="icon-sm"
         disabled={deleteItem.isPending}
-        onClick={() => deleteItem.mutate(item.id)}
+        onClick={() => deleteItem.mutate(item)}
         aria-label={`Remove ${item.name}`}
         className="text-muted-foreground hover:text-destructive shrink-0 opacity-100 transition-all md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
       >

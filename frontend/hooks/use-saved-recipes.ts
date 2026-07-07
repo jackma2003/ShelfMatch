@@ -65,12 +65,20 @@ export function useUpdateSavedRecipeStatus() {
 export function useUnsaveRecipe() {
   const queryClient = useQueryClient();
   const toastManager = useToastManager();
+  const saveRecipe = useSaveRecipe();
   return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<{ success: true }>(`/api/saved/${id}`, { method: "DELETE" }),
-    onSuccess: () => {
+    mutationFn: (savedRecipe: SavedRecipe) =>
+      apiFetch<{ success: true }>(`/api/saved/${savedRecipe.id}`, { method: "DELETE" }),
+    onSuccess: (_data, savedRecipe) => {
       queryClient.invalidateQueries({ queryKey: SAVED_QUERY_KEY });
-      toastManager.add({ title: "Removed from saved" });
+      toastManager.add({
+        title: "Removed from saved",
+        actionProps: {
+          children: "Undo",
+          onClick: () =>
+            saveRecipe.mutate({ recipeId: savedRecipe.recipeId, status: savedRecipe.status }),
+        },
+      });
     },
   });
 }

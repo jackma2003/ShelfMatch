@@ -59,6 +59,22 @@ function ToastDescription({ className, ...props }: ToastPrimitive.Description.Pr
   );
 }
 
+function ToastAction({ className, ...props }: ToastPrimitive.Action.Props) {
+  return (
+    <ToastPrimitive.Action
+      data-slot="toast-action"
+      render={
+        <Button
+          variant="link"
+          size="sm"
+          className={cn("text-primary mt-1 h-auto p-0 font-semibold", className)}
+        />
+      }
+      {...props}
+    />
+  );
+}
+
 function ToastClose({ className, ...props }: ToastPrimitive.Close.Props) {
   return (
     <ToastPrimitive.Close
@@ -87,6 +103,7 @@ function Toaster() {
         <ToastRoot key={toast.id} toast={toast}>
           {toast.title && <ToastTitle>{toast.title}</ToastTitle>}
           {toast.description && <ToastDescription>{toast.description}</ToastDescription>}
+          <ToastAction />
           <ToastClose />
         </ToastRoot>
       ))}
@@ -100,6 +117,7 @@ export {
   ToastRoot,
   ToastTitle,
   ToastDescription,
+  ToastAction,
   ToastClose,
   Toaster,
   useToastManager,

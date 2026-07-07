@@ -79,7 +79,7 @@ export function PantryItemRow({ item }: { item: PantryItem }) {
           size="sm"
           disabled={deleteItem.isPending}
           className="text-muted-foreground hover:text-destructive"
-          onClick={() => deleteItem.mutate(item.id)}
+          onClick={() => deleteItem.mutate(item)}
         >
           Delete
         </Button>

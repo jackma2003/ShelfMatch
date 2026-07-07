@@ -86,7 +86,7 @@ export default function SavedRecipesPage() {
         <EmptyState
           icon={Heart}
           title="Nothing saved yet"
-          description="Generate some meals and save the ones that look delicious."
+          description="Generate some meals and save the ones you'll want to make again."
         />
       )}
 

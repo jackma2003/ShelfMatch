@@ -86,12 +86,20 @@ export function useUpdateShoppingListItem() {
 export function useDeleteShoppingListItem() {
   const queryClient = useQueryClient();
   const toastManager = useToastManager();
+  const addItem = useAddShoppingListItem();
   return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<{ success: true }>(`/api/shopping-list/${id}`, { method: "DELETE" }),
-    onSuccess: () => {
+    mutationFn: (item: ShoppingListItem) =>
+      apiFetch<{ success: true }>(`/api/shopping-list/${item.id}`, { method: "DELETE" }),
+    onSuccess: (_data, item) => {
       queryClient.invalidateQueries({ queryKey: SHOPPING_LIST_QUERY_KEY });
-      toastManager.add({ title: "Removed from list" });
+      toastManager.add({
+        title: "Removed from list",
+        actionProps: {
+          children: "Undo",
+          onClick: () =>
+            addItem.mutate({ name: item.name, quantity: item.quantity, unit: item.unit }),
+        },
+      });
     },
   });
 }

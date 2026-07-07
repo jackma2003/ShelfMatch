@@ -13,6 +13,21 @@ import { ApiError } from "@/lib/api-client";
 
 const STORAGE_KEY = "shelfmatch:generated-recipes";
 
+interface PersistedGeneration {
+  recipes: Recipe[];
+  generatedAt: number;
+}
+
+function relativeTime(timestamp: number): string {
+  const diffMin = Math.round((Date.now() - timestamp) / 60_000);
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? "" : "s"} ago`;
+  const diffHour = Math.round(diffMin / 60);
+  if (diffHour < 24) return `${diffHour} hour${diffHour === 1 ? "" : "s"} ago`;
+  const diffDay = Math.round(diffHour / 24);
+  return `${diffDay} day${diffDay === 1 ? "" : "s"} ago`;
+}
+
 const DIETARY_TAGS: { value: DietaryTag | undefined; label: string }[] = [
   { value: undefined, label: "Any diet" },
   { value: "vegetarian", label: "Vegetarian" },
@@ -92,17 +107,27 @@ export default function GenerateRecipesPage() {
   const [dietaryTag, setDietaryTag] = useState<DietaryTag | undefined>(undefined);
   const [generationCount, setGenerationCount] = useState(0);
 
-  const [persistedRecipes, setPersistedRecipes] = useState<Recipe[] | null>(() => {
+  const [persisted, setPersisted] = useState<PersistedGeneration | null>(() => {
     if (typeof window === "undefined") return null;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? (JSON.parse(stored) as Recipe[]) : null;
+      if (!stored) return null;
+      const parsed: unknown = JSON.parse(stored);
+      // Legacy cache shape was a bare Recipe[] with no timestamp — treat as "time unknown".
+      if (Array.isArray(parsed)) return { recipes: parsed as Recipe[], generatedAt: 0 };
+      return parsed as PersistedGeneration;
     } catch {
       return null;
     }
   });
 
-  const displayedRecipes = generate.isSuccess ? generate.data.recipes : persistedRecipes;
+  const displayedRecipes = persisted?.recipes ?? null;
+
+  const handleClear = () => {
+    generate.reset();
+    setPersisted(null);
+    localStorage.removeItem(STORAGE_KEY);
+  };
 
   const errorMessage =
     generate.error instanceof ApiError
@@ -115,8 +140,9 @@ export default function GenerateRecipesPage() {
       { maxCookTimeMinutes: quickOnly ? 20 : undefined, dietaryTag },
       {
         onSuccess: ({ recipes }) => {
-          setPersistedRecipes(recipes);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
+          const generation: PersistedGeneration = { recipes, generatedAt: Date.now() };
+          setPersisted(generation);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(generation));
         },
       },
     );
@@ -201,10 +227,22 @@ export default function GenerateRecipesPage() {
       {/* Results */}
       {!generate.isPending && !generate.isError && displayedRecipes && (
         <div className="space-y-4">
-          <p className="text-muted-foreground text-sm">
-            Found {displayedRecipes.length} meal
-            {displayedRecipes.length !== 1 ? "s" : ""} you can make right now.
-          </p>
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-muted-foreground text-sm">
+              Found {displayedRecipes.length} meal
+              {displayedRecipes.length !== 1 ? "s" : ""} you can make right now.
+              {persisted &&
+                persisted.generatedAt > 0 &&
+                ` Generated ${relativeTime(persisted.generatedAt)}.`}
+            </p>
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-muted-foreground hover:text-foreground shrink-0 text-sm underline-offset-4 hover:underline"
+            >
+              Clear
+            </button>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {displayedRecipes.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />

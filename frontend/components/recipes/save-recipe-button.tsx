@@ -16,7 +16,7 @@ export function SaveRecipeButton({ recipeId }: { recipeId: string }) {
 
   const handleClick = () => {
     if (existing) {
-      unsaveRecipe.mutate(existing.id);
+      unsaveRecipe.mutate(existing);
     } else {
       saveRecipe.mutate({ recipeId });
     }
@@ -28,9 +28,9 @@ export function SaveRecipeButton({ recipeId }: { recipeId: string }) {
       size="sm"
       onClick={handleClick}
       disabled={isPending}
-      className={cn("gap-1.5", saved && "text-rose-600")}
+      className={cn("gap-1.5", saved && "text-favorite")}
     >
-      <Heart className={cn("size-3.5", saved && "fill-rose-500 text-rose-500")} />
+      <Heart className={cn("size-3.5", saved && "fill-favorite text-favorite")} />
       {saved ? "Saved" : "Save recipe"}
     </Button>
   );
