@@ -58,7 +58,7 @@ export function PasswordForm({ user }: { user: User }) {
               {...register("currentPassword")}
             />
             {errors.currentPassword && (
-              <p className="text-sm text-destructive">{errors.currentPassword.message}</p>
+              <p className="text-destructive text-sm">{errors.currentPassword.message}</p>
             )}
           </div>
           <div className="space-y-1.5">
@@ -71,11 +71,11 @@ export function PasswordForm({ user }: { user: User }) {
               {...register("newPassword")}
             />
             {errors.newPassword && (
-              <p className="text-sm text-destructive">{errors.newPassword.message}</p>
+              <p className="text-destructive text-sm">{errors.newPassword.message}</p>
             )}
           </div>
           {changePassword.isError && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <p className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
               {changePassword.error instanceof ApiError
                 ? changePassword.error.message
                 : "Something went wrong"}

@@ -17,7 +17,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (isLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div
+        className="flex min-h-screen flex-col items-center justify-center gap-3 p-4"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.94 0.04 70 / 0.5) 0%, transparent 60%)",
+        }}
+      >
+        <img src="/icon.svg" className="size-8 animate-pulse" alt="" />
         <p className="text-muted-foreground text-sm">Loading...</p>
       </div>
     );

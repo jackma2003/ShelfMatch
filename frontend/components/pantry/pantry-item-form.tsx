@@ -82,18 +82,11 @@ export function PantryItemForm({
             className="h-10"
             {...register("quantity")}
           />
-          {errors.quantity && (
-            <p className="text-destructive text-sm">{errors.quantity.message}</p>
-          )}
+          {errors.quantity && <p className="text-destructive text-sm">{errors.quantity.message}</p>}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor={unitId}>Unit</Label>
-          <Input
-            id={unitId}
-            placeholder="e.g. pieces"
-            className="h-10"
-            {...register("unit")}
-          />
+          <Input id={unitId} placeholder="e.g. pieces" className="h-10" {...register("unit")} />
           {errors.unit && <p className="text-destructive text-sm">{errors.unit.message}</p>}
         </div>
         <div className="space-y-1.5">
@@ -103,7 +96,7 @@ export function PantryItemForm({
             control={control}
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id={categoryId} className="w-full h-10">
+                <SelectTrigger id={categoryId} className="h-10 w-full">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>

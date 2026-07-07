@@ -2,10 +2,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockGenerateContent = vi.hoisted(() => vi.fn());
 
+class MockApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 vi.mock("@google/genai", () => ({
   GoogleGenAI: vi.fn().mockImplementation(() => ({
     models: { generateContent: mockGenerateContent },
   })),
+  ApiError: MockApiError,
 }));
 
 process.env.GEMINI_API_KEY = "test-key";
@@ -57,6 +66,24 @@ describe("generateJson", () => {
     mockGenerateContent.mockResolvedValue({ text: "" });
 
     await expect(generateJson("prompt")).rejects.toMatchObject({ code: "AI_EMPTY_RESPONSE" });
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+  });
+
+  // Gemini enforces the X-Server-Timeout we send by responding with a 504 ApiError rather than
+  // the fetch itself aborting — both need to surface as the same friendly, non-retried error.
+  it("maps a 504 ApiError from Gemini's own server-side timeout to AI_TIMEOUT", async () => {
+    mockGenerateContent.mockRejectedValue(new MockApiError("DEADLINE_EXCEEDED", 504));
+
+    await expect(generateJson("prompt")).rejects.toMatchObject({ statusCode: 504, code: "AI_TIMEOUT" });
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("maps a client-side AbortError to AI_TIMEOUT", async () => {
+    const abortError = new Error("This operation was aborted");
+    abortError.name = "AbortError";
+    mockGenerateContent.mockRejectedValue(abortError);
+
+    await expect(generateJson("prompt")).rejects.toMatchObject({ statusCode: 504, code: "AI_TIMEOUT" });
     expect(mockGenerateContent).toHaveBeenCalledTimes(1);
   });
 });

@@ -32,7 +32,7 @@ export function GoogleButton() {
       nativeButton={false}
       type="button"
       variant="outline"
-      className="w-full h-10 gap-2.5"
+      className="h-10 w-full gap-2.5"
     >
       <GoogleIcon />
       Continue with Google

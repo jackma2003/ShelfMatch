@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useToastManager } from "@/components/ui/toast";
 import { apiFetch } from "@/lib/api-client";
 import type { Recipe } from "@/hooks/use-recipes";
 
@@ -21,7 +22,9 @@ export function useSavedRecipes(status?: SavedRecipeStatus) {
     queryKey: [...SAVED_QUERY_KEY, status ?? "all"],
     queryFn: async () => {
       const search = status ? `?status=${status}` : "";
-      const { savedRecipes } = await apiFetch<{ savedRecipes: SavedRecipe[] }>(`/api/saved${search}`);
+      const { savedRecipes } = await apiFetch<{ savedRecipes: SavedRecipe[] }>(
+        `/api/saved${search}`,
+      );
       return savedRecipes;
     },
   });
@@ -57,10 +60,13 @@ export function useUpdateSavedRecipeStatus() {
 
 export function useUnsaveRecipe() {
   const queryClient = useQueryClient();
+  const toastManager = useToastManager();
   return useMutation({
-    mutationFn: (id: string) => apiFetch<{ success: true }>(`/api/saved/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) =>
+      apiFetch<{ success: true }>(`/api/saved/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SAVED_QUERY_KEY });
+      toastManager.add({ title: "Removed from saved" });
     },
   });
 }

@@ -82,6 +82,26 @@ Respond with ONLY valid JSON (no markdown code fences, no commentary) matching e
 }`;
 }
 
+// Stock photos are decorative, and Unsplash is the slowest thing standing between "Gemini
+// responded" and "user sees their recipes." Recipes are persisted and returned without
+// waiting on images; this fills them in afterward so the next page load has them.
+async function attachRecipeImages(
+  persisted: { id: string }[],
+  recipes: AiRecipe[],
+): Promise<void> {
+  await Promise.all(
+    persisted.map(async (recipe, i) => {
+      try {
+        const imageUrl = await getRecipeImageUrl(recipes[i].title);
+        if (!imageUrl) return;
+        await prisma.recipe.update({ where: { id: recipe.id }, data: { imageUrl } });
+      } catch (error) {
+        console.error(`Failed to attach image for recipe ${recipe.id}:`, error);
+      }
+    }),
+  );
+}
+
 async function persistRecipe(recipe: AiRecipe, imageUrl: string | null) {
   return prisma.recipe.create({
     data: {
@@ -153,16 +173,15 @@ export async function generateRecipes(userId: string, filters: GenerateRecipesIn
     throw new HttpError(502, "AI service response didn't match the expected format", "AI_INVALID_SHAPE");
   }
 
-  const imageUrls = await Promise.all(
-    result.data.recipes.map((recipe) => getRecipeImageUrl(recipe.title)),
-  );
   const persisted = await Promise.all(
-    result.data.recipes.map((recipe, i) => persistRecipe(recipe, imageUrls[i])),
+    result.data.recipes.map((recipe) => persistRecipe(recipe, null)),
   );
 
   await prisma.recipeGenerationBatch.create({
     data: { userId, pantryHash: requestHash, recipeIds: persisted.map((recipe) => recipe.id) },
   });
+
+  void attachRecipeImages(persisted, result.data.recipes);
 
   return persisted.map((recipe) => withMatchInfo(recipe, pantryNames));
 }

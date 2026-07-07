@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useLogout, useMe } from "@/hooks/use-auth";
@@ -24,14 +23,12 @@ function NavLink({ href, label, onClick }: { href: string; label: string; onClic
       href={href}
       onClick={onClick}
       className={cn(
-        "text-sm font-medium transition-colors hover:text-foreground",
+        "hover:text-foreground text-sm font-medium transition-colors",
         active ? "text-foreground" : "text-muted-foreground",
       )}
     >
       {label}
-      {active && (
-        <span className="block h-0.5 rounded-full bg-primary mt-0.5" />
-      )}
+      {active && <span className="bg-primary mt-0.5 block h-0.5 rounded-full" />}
     </Link>
   );
 }
@@ -40,7 +37,6 @@ export function Navbar() {
   const router = useRouter();
   const { data: user } = useMe();
   const logout = useLogout();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -49,12 +45,12 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md">
+    <header className="bg-background/90 sticky top-0 z-50 border-b backdrop-blur-md">
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
         {/* Brand */}
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 font-bold text-base hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 text-base font-bold transition-opacity hover:opacity-80"
         >
           <img src="/icon.svg" className="size-6" alt="ShelfMatch" />
           <span className="text-primary">ShelfMatch</span>
@@ -62,7 +58,7 @@ export function Navbar() {
 
         {/* Desktop links */}
         {user && (
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden items-center gap-6 md:flex">
             {NAV_LINKS.map((link) => (
               <NavLink key={link.href} href={link.href} label={link.label} />
             ))}
@@ -70,67 +66,47 @@ export function Navbar() {
         )}
 
         {/* Right side */}
-        <div className="flex items-center gap-3">
-          {user && (
-            <>
-              <Link
-                href="/settings"
-                className="hidden md:block text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {user.name}
-              </Link>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                disabled={logout.isPending}
-                className="hidden md:inline-flex"
-              >
-                {logout.isPending ? "..." : "Log out"}
-              </Button>
-              {/* Mobile hamburger */}
-              <button
-                className="md:hidden rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                onClick={() => setMobileOpen((v) => !v)}
-                aria-label={mobileOpen ? "Close menu" : "Open menu"}
-              >
-                {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-              </button>
-            </>
-          )}
-        </div>
-      </nav>
-
-      {/* Mobile drawer */}
-      {mobileOpen && user && (
-        <div className="md:hidden border-t bg-background px-6 py-4 space-y-1 animate-fade-in">
-          {NAV_LINKS.map((link) => (
-            <NavLink
-              key={link.href}
-              href={link.href}
-              label={link.label}
-              onClick={() => setMobileOpen(false)}
-            />
-          ))}
-          <div className="pt-3 border-t mt-3 flex items-center justify-between">
+        {user && (
+          <div className="flex items-center gap-3">
             <Link
               href="/settings"
-              onClick={() => setMobileOpen(false)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground hidden text-sm transition-colors md:block"
             >
               {user.name}
             </Link>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => { setMobileOpen(false); handleLogout(); }}
+              onClick={handleLogout}
               disabled={logout.isPending}
+              className="hidden md:inline-flex"
             >
-              Log out
+              {logout.isPending ? "..." : "Log out"}
+            </Button>
+            {/* Compact mobile actions — bottom tab bar covers primary nav */}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              render={<Link href="/settings" />}
+              nativeButton={false}
+              aria-label="Settings"
+              className="md:hidden"
+            >
+              <Settings className="size-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleLogout}
+              disabled={logout.isPending}
+              aria-label="Log out"
+              className="md:hidden"
+            >
+              <LogOut className="size-5" />
             </Button>
           </div>
-        </div>
-      )}
+        )}
+      </nav>
     </header>
   );
 }

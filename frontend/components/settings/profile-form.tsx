@@ -40,18 +40,16 @@ export function ProfileForm({ user }: { user: User }) {
           <div className="space-y-1.5">
             <Label htmlFor={`${id}-name`}>Name</Label>
             <Input id={`${id}-name`} className="h-10" {...register("name")} />
-            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
           </div>
           {updateProfile.isError && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <p className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
               {updateProfile.error instanceof ApiError
                 ? updateProfile.error.message
                 : "Something went wrong"}
             </p>
           )}
-          {updateProfile.isSuccess && (
-            <p className="text-sm text-green-600">Saved.</p>
-          )}
+          {updateProfile.isSuccess && <p className="text-sm text-green-600">Saved.</p>}
           <Button type="submit" disabled={updateProfile.isPending} className="h-9">
             {updateProfile.isPending ? "Saving..." : "Save changes"}
           </Button>

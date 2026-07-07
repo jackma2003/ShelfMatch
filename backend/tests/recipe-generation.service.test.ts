@@ -7,6 +7,7 @@ const mockPrisma = vi.hoisted(() => ({
   recipe: {
     create: vi.fn(),
     findMany: vi.fn(),
+    update: vi.fn(),
   },
   recipeGenerationBatch: {
     findFirst: vi.fn(),
@@ -146,7 +147,7 @@ describe("generateRecipes", () => {
     expect(unfilteredHash.where.pantryHash).not.toBe(filteredHash.where.pantryHash);
   });
 
-  it("attaches an image URL to the persisted recipe when one is found", async () => {
+  it("returns immediately with no image, then attaches one in the background once found", async () => {
     mockPrisma.pantryItem.findMany.mockResolvedValue(pantryItems);
     mockGenerateJson.mockResolvedValue(JSON.stringify(validAiResponse));
     mockGetRecipeImageUrl.mockResolvedValue("https://images.unsplash.com/photo-123");
@@ -156,14 +157,23 @@ describe("generateRecipes", () => {
       ingredients: (data.ingredients as { create: Record<string, unknown>[] }).create,
     }));
 
-    await generateRecipes(USER_ID);
+    const [recipe] = await generateRecipes(USER_ID);
 
-    expect(mockGetRecipeImageUrl).toHaveBeenCalledWith("Garlic Chicken");
+    // The response shouldn't wait on Unsplash — recipes come back image-less immediately.
+    expect(recipe.imageUrl).toBeNull();
     const createCall = mockPrisma.recipe.create.mock.calls[0][0];
-    expect(createCall.data.imageUrl).toBe("https://images.unsplash.com/photo-123");
+    expect(createCall.data.imageUrl).toBeNull();
+
+    await vi.waitFor(() => {
+      expect(mockGetRecipeImageUrl).toHaveBeenCalledWith("Garlic Chicken");
+      expect(mockPrisma.recipe.update).toHaveBeenCalledWith({
+        where: { id: "recipe-1" },
+        data: { imageUrl: "https://images.unsplash.com/photo-123" },
+      });
+    });
   });
 
-  it("still generates successfully with no image when the lookup finds nothing", async () => {
+  it("still generates successfully with no image, and skips the update, when the lookup finds nothing", async () => {
     mockPrisma.pantryItem.findMany.mockResolvedValue(pantryItems);
     mockGenerateJson.mockResolvedValue(JSON.stringify(validAiResponse));
     mockGetRecipeImageUrl.mockResolvedValue(null);
@@ -176,6 +186,8 @@ describe("generateRecipes", () => {
     const [recipe] = await generateRecipes(USER_ID);
 
     expect(recipe.imageUrl).toBeNull();
+    await vi.waitFor(() => expect(mockGetRecipeImageUrl).toHaveBeenCalled());
+    expect(mockPrisma.recipe.update).not.toHaveBeenCalled();
   });
 
   it("returns a cached batch and never calls Gemini when the pantry is unchanged", async () => {

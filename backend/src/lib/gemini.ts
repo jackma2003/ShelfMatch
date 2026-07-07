@@ -1,10 +1,15 @@
-import { GoogleGenAI } from "@google/genai";
+import { ApiError, GoogleGenAI } from "@google/genai";
 
 import { HttpError } from "../middleware/error-handler.js";
 
 const MODEL = "gemini-2.5-flash";
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 300;
+// Bounds the worst case: without this, a stalled Gemini request leaves the user staring at
+// the loading skeleton indefinitely instead of getting a retryable error. This also gets sent
+// to Gemini as an X-Server-Timeout header, so it needs enough room for a normal 3-5 recipe
+// generation (which can legitimately take 20-30s) or it'll trip on ordinary requests.
+const REQUEST_TIMEOUT_MS = 45_000;
 
 let client: GoogleGenAI | null = null;
 
@@ -34,6 +39,15 @@ function isRetryableNetworkError(error: unknown): boolean {
   return error instanceof TypeError && error.message === "fetch failed";
 }
 
+// httpOptions.timeout races two things: the SDK aborting the fetch client-side (surfaces as a
+// DOMException named "AbortError") and the X-Server-Timeout header it sends causing Gemini
+// itself to give up and respond with a 504 DEADLINE_EXCEEDED ApiError. Both mean the same thing
+// to the caller.
+function isTimeoutError(error: unknown): boolean {
+  if (error instanceof Error && error.name === "AbortError") return true;
+  return error instanceof ApiError && error.status === 504;
+}
+
 export async function generateJson(prompt: string): Promise<string> {
   const ai = getGeminiClient();
 
@@ -44,6 +58,7 @@ export async function generateJson(prompt: string): Promise<string> {
         contents: prompt,
         config: {
           responseMimeType: "application/json",
+          httpOptions: { timeout: REQUEST_TIMEOUT_MS },
         },
       });
 
@@ -54,6 +69,9 @@ export async function generateJson(prompt: string): Promise<string> {
 
       return text;
     } catch (error) {
+      if (isTimeoutError(error)) {
+        throw new HttpError(504, "AI service took too long to respond", "AI_TIMEOUT");
+      }
       if (!isRetryableNetworkError(error) || attempt === MAX_ATTEMPTS) {
         throw error;
       }

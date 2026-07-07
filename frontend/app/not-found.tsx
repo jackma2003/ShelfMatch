@@ -14,19 +14,17 @@ export default function NotFound() {
     >
       <Link
         href="/"
-        className="mb-8 flex items-center gap-2 text-xl font-bold text-primary hover:opacity-80 transition-opacity"
+        className="text-primary mb-8 flex items-center gap-2 text-xl font-bold transition-opacity hover:opacity-80"
       >
         <img src="/icon.svg" className="size-7" alt="ShelfMatch" /> ShelfMatch
       </Link>
-      <Card className="w-full max-w-sm shadow-lg shadow-foreground/5">
+      <Card className="shadow-foreground/5 w-full max-w-sm shadow-lg">
         <CardHeader className="pb-4">
           <CardTitle className="text-xl font-bold">Page not found</CardTitle>
-          <CardDescription>
-            That page doesn&apos;t exist, or may have moved.
-          </CardDescription>
+          <CardDescription>That page doesn&apos;t exist, or may have moved.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button className="w-full h-10" render={<Link href="/dashboard" />} nativeButton={false}>
+          <Button className="h-10 w-full" render={<Link href="/dashboard" />} nativeButton={false}>
             Go home
           </Button>
         </CardContent>

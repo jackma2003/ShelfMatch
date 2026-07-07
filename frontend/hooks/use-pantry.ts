@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useToastManager } from "@/components/ui/toast";
 import { apiFetch } from "@/lib/api-client";
 import type { PantryCategory } from "@/lib/pantry-categories";
 import type { PantryItemFormValues } from "@/lib/validators/pantry";
@@ -59,10 +60,13 @@ export function useUpdatePantryItem() {
 
 export function useDeletePantryItem() {
   const queryClient = useQueryClient();
+  const toastManager = useToastManager();
   return useMutation({
-    mutationFn: (id: string) => apiFetch<{ success: true }>(`/api/pantry/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) =>
+      apiFetch<{ success: true }>(`/api/pantry/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PANTRY_QUERY_KEY });
+      toastManager.add({ title: "Removed from pantry" });
     },
   });
 }

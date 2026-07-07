@@ -2,7 +2,11 @@
 
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useDeleteShoppingListItem, useUpdateShoppingListItem, type ShoppingListItem } from "@/hooks/use-shopping-list";
+import {
+  useDeleteShoppingListItem,
+  useUpdateShoppingListItem,
+  type ShoppingListItem,
+} from "@/hooks/use-shopping-list";
 import { cn } from "@/lib/utils";
 
 export function ShoppingListItemRow({ item }: { item: ShoppingListItem }) {
@@ -19,7 +23,7 @@ export function ShoppingListItemRow({ item }: { item: ShoppingListItem }) {
             onChange={(e) =>
               updateItem.mutate({ id: item.id, input: { isChecked: e.target.checked } })
             }
-            className="peer size-[18px] cursor-pointer appearance-none rounded-md border-2 border-border checked:border-primary checked:bg-primary transition-all"
+            className="peer border-border checked:border-primary checked:bg-primary size-[18px] cursor-pointer appearance-none rounded-md border-2 transition-all"
           />
           {/* checkmark */}
           <svg
@@ -50,7 +54,8 @@ export function ShoppingListItemRow({ item }: { item: ShoppingListItem }) {
         size="icon-sm"
         disabled={deleteItem.isPending}
         onClick={() => deleteItem.mutate(item.id)}
-        className="shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
+        aria-label={`Remove ${item.name}`}
+        className="text-muted-foreground hover:text-destructive shrink-0 opacity-0 transition-all group-hover:opacity-100"
       >
         <Trash2 className="size-3.5" />
       </Button>

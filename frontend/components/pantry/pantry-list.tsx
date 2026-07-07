@@ -1,21 +1,37 @@
 "use client";
 
+import {
+  Beef,
+  Cookie,
+  CupSoda,
+  Droplet,
+  Flame,
+  type LucideIcon,
+  Milk,
+  Package,
+  Snowflake,
+  Wheat,
+  Salad,
+} from "lucide-react";
+
 import { PantryItemRow } from "@/components/pantry/pantry-item-row";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { usePantryItems, type PantryItem } from "@/hooks/use-pantry";
 import { PANTRY_CATEGORY_LABELS, type PantryCategory } from "@/lib/pantry-categories";
 
-const CATEGORY_EMOJI: Record<PantryCategory, string> = {
-  PRODUCE: "🥦",
-  DAIRY: "🧀",
-  MEAT_SEAFOOD: "🥩",
-  GRAIN_BREAD: "🍞",
-  CANNED_JARRED: "🥫",
-  CONDIMENT_SAUCE: "🫙",
-  SPICE_SEASONING: "🌶️",
-  BAKING: "🫖",
-  FROZEN: "🧊",
-  BEVERAGE: "🧃",
-  OTHER: "📦",
+const CATEGORY_ICON: Record<PantryCategory, LucideIcon> = {
+  PRODUCE: Salad,
+  DAIRY: Milk,
+  MEAT_SEAFOOD: Beef,
+  GRAIN_BREAD: Wheat,
+  CANNED_JARRED: Package,
+  CONDIMENT_SAUCE: Droplet,
+  SPICE_SEASONING: Flame,
+  BAKING: Cookie,
+  FROZEN: Snowflake,
+  BEVERAGE: CupSoda,
+  OTHER: Package,
 };
 
 function groupByCategory(items: PantryItem[]): [PantryCategory, PantryItem[]][] {
@@ -30,30 +46,18 @@ function groupByCategory(items: PantryItem[]): [PantryCategory, PantryItem[]][] 
   );
 }
 
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-14 text-center">
-      <span className="text-5xl">🛒</span>
-      <p className="font-medium text-foreground">Your pantry is empty</p>
-      <p className="text-sm text-muted-foreground max-w-xs">
-        Add your first item above to get started. ShelfMatch will suggest meals based on what you
-        have.
-      </p>
-    </div>
-  );
-}
-
 function ItemGroup({ category, items }: { category: PantryCategory; items: PantryItem[] }) {
+  const CategoryIcon = CATEGORY_ICON[category];
   return (
     <div>
       <div className="mb-2 flex items-center gap-2">
-        <span className="text-base">{CATEGORY_EMOJI[category]}</span>
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        <CategoryIcon className="text-muted-foreground size-4" />
+        <h3 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
           {PANTRY_CATEGORY_LABELS[category]}
         </h3>
-        <span className="ml-auto text-xs text-muted-foreground">{items.length}</span>
+        <span className="text-muted-foreground ml-auto text-xs">{items.length}</span>
       </div>
-      <div className="rounded-xl border bg-card px-4">
+      <div className="bg-card rounded-2xl border px-4">
         {items.map((item) => (
           <PantryItemRow key={item.id} item={item} />
         ))}
@@ -69,19 +73,25 @@ export function PantryList({ sortExpiring }: { sortExpiring: boolean }) {
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />
+          <Skeleton key={i} className="h-16" />
         ))}
       </div>
     );
   }
 
   if (!items || items.length === 0) {
-    return <EmptyState />;
+    return (
+      <EmptyState
+        icon={Package}
+        title="Your pantry is empty"
+        description="Add your first item above to get started. ShelfMatch will suggest meals based on what you have."
+      />
+    );
   }
 
   if (sortExpiring) {
     return (
-      <div className="rounded-xl border bg-card px-4">
+      <div className="bg-card rounded-2xl border px-4">
         {items.map((item) => (
           <PantryItemRow key={item.id} item={item} />
         ))}

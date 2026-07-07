@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useToastManager } from "@/components/ui/toast";
 import { apiFetch } from "@/lib/api-client";
 
 export interface ShoppingListItem {
@@ -63,7 +64,13 @@ export function useAddMissingFromRecipe() {
 export function useUpdateShoppingListItem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<ManualAddInput & { isChecked: boolean }> }) =>
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: Partial<ManualAddInput & { isChecked: boolean }>;
+    }) =>
       apiFetch<{ item: ShoppingListItem }>(`/api/shopping-list/${id}`, {
         method: "PATCH",
         body: JSON.stringify(input),
@@ -76,11 +83,13 @@ export function useUpdateShoppingListItem() {
 
 export function useDeleteShoppingListItem() {
   const queryClient = useQueryClient();
+  const toastManager = useToastManager();
   return useMutation({
     mutationFn: (id: string) =>
       apiFetch<{ success: true }>(`/api/shopping-list/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SHOPPING_LIST_QUERY_KEY });
+      toastManager.add({ title: "Removed from list" });
     },
   });
 }

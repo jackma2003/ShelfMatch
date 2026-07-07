@@ -51,7 +51,11 @@ export function DangerZone() {
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button variant="destructive" disabled={deleteAccount.isPending} onClick={handleDelete}>
+              <Button
+                variant="destructive"
+                disabled={deleteAccount.isPending}
+                onClick={handleDelete}
+              >
                 {deleteAccount.isPending ? "Deleting..." : "Yes, delete my account"}
               </Button>
             </DialogFooter>

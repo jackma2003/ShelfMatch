@@ -36,16 +36,16 @@ export function LoginForm() {
   const invalidTokenRedirect = searchParams.get("error") === "invalid_token";
 
   return (
-    <Card className="w-full max-w-sm shadow-lg shadow-foreground/5">
+    <Card className="shadow-foreground/5 w-full max-w-sm shadow-lg">
       <CardHeader className="pb-4">
         <CardTitle className="text-xl font-bold">Welcome back</CardTitle>
         <CardDescription>Log in to see what you can make right now.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
         {invalidTokenRedirect && !login.isError && (
-          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            That verification link is invalid or has expired. Request a new one below by trying
-            to log in.
+          <p className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
+            That verification link is invalid or has expired. Request a new one below by trying to
+            log in.
           </p>
         )}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -59,7 +59,7 @@ export function LoginForm() {
               placeholder="you@example.com"
               {...register("email")}
             />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="password">Password</Label>
@@ -72,12 +72,12 @@ export function LoginForm() {
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-sm text-destructive">{errors.password.message}</p>
+              <p className="text-destructive text-sm">{errors.password.message}</p>
             )}
           </div>
           {login.isError && (
             <div className="space-y-2">
-              <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <p className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
                 {login.error instanceof ApiError ? login.error.message : "Something went wrong"}
               </p>
               {isUnverified && (
@@ -97,19 +97,22 @@ export function LoginForm() {
               )}
             </div>
           )}
-          <Button type="submit" className="w-full h-10" disabled={login.isPending}>
+          <Button type="submit" className="h-10 w-full" disabled={login.isPending}>
             {login.isPending ? "Logging in..." : "Log in"}
           </Button>
         </form>
         <div className="flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
-          <div className="h-px flex-1 bg-border" />
+          <div className="bg-border h-px flex-1" />
+          <span className="text-muted-foreground text-xs">or</span>
+          <div className="bg-border h-px flex-1" />
         </div>
         <GoogleButton />
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-center text-sm">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-medium text-primary hover:underline underline-offset-4">
+          <Link
+            href="/signup"
+            className="text-primary font-medium underline-offset-4 hover:underline"
+          >
             Sign up
           </Link>
         </p>

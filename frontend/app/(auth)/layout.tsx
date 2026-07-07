@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     >
       <Link
         href="/"
-        className="mb-8 flex items-center gap-2 text-xl font-bold text-primary hover:opacity-80 transition-opacity"
+        className="text-primary mb-8 flex items-center gap-2 text-xl font-bold transition-opacity hover:opacity-80"
       >
         <img src="/icon.svg" className="size-7" alt="ShelfMatch" /> ShelfMatch
       </Link>

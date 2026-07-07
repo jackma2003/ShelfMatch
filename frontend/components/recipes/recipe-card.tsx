@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { Clock } from "lucide-react";
+
+import { Card } from "@/components/ui/card";
 import type { Recipe } from "@/hooks/use-recipes";
 import { cn } from "@/lib/utils";
 
@@ -9,33 +12,34 @@ const DIFFICULTY_CONFIG = {
 } as const;
 
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
+  const hasMatchInfo = typeof recipe.totalCount === "number" && recipe.totalCount > 0;
   const fullMatch = recipe.matchedCount === recipe.totalCount;
-  const matchPercent = recipe.totalCount > 0
+  const matchPercent = hasMatchInfo
     ? Math.round((recipe.matchedCount / recipe.totalCount) * 100)
     : 0;
   const difficulty = DIFFICULTY_CONFIG[recipe.difficulty];
 
   return (
     <Link href={`/recipes/${recipe.id}`} className="group block h-full">
-      <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-card ring-1 ring-border transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/30">
+      <Card className="hover:ring-primary/30 h-full gap-0 py-0 transition-all hover:-translate-y-0.5 hover:shadow-md">
         {recipe.imageUrl && (
           <img src={recipe.imageUrl} alt="" className="h-32 w-full object-cover" />
         )}
         <div className="flex flex-1 flex-col gap-4 p-5">
           {/* Header */}
           <div className="flex-1">
-            <h3 className="font-semibold leading-snug group-hover:text-primary transition-colors">
+            <h3 className="group-hover:text-primary leading-snug font-semibold transition-colors">
               {recipe.title}
             </h3>
-            <p className="mt-1 text-sm text-muted-foreground leading-relaxed line-clamp-2">
+            <p className="text-muted-foreground mt-1 line-clamp-2 text-sm leading-relaxed">
               {recipe.description}
             </p>
           </div>
 
           {/* Metadata chips */}
           <div className="flex flex-wrap gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-              ⏱ {recipe.cookTimeMinutes} min
+            <span className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium">
+              <Clock className="size-3.5" /> {recipe.cookTimeMinutes} min
             </span>
             <span
               className={cn(
@@ -48,25 +52,29 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
           </div>
 
           {/* Ingredient match */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Ingredients you have</span>
-              <span className={cn("font-semibold", fullMatch ? "text-green-600" : "text-amber-600")}>
-                {recipe.matchedCount}/{recipe.totalCount}
-              </span>
+          {hasMatchInfo && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Ingredients you have</span>
+                <span
+                  className={cn("font-semibold", fullMatch ? "text-green-600" : "text-amber-600")}
+                >
+                  {recipe.matchedCount}/{recipe.totalCount}
+                </span>
+              </div>
+              <div className="bg-muted h-1.5 overflow-hidden rounded-full">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    fullMatch ? "bg-green-500" : "bg-amber-400",
+                  )}
+                  style={{ width: `${matchPercent}%` }}
+                />
+              </div>
             </div>
-            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all",
-                  fullMatch ? "bg-green-500" : "bg-amber-400",
-                )}
-                style={{ width: `${matchPercent}%` }}
-              />
-            </div>
-          </div>
+          )}
         </div>
-      </div>
+      </Card>
     </Link>
   );
 }

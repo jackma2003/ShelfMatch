@@ -21,11 +21,11 @@ export default function GlobalError({
     >
       <Link
         href="/"
-        className="mb-8 flex items-center gap-2 text-xl font-bold text-primary hover:opacity-80 transition-opacity"
+        className="text-primary mb-8 flex items-center gap-2 text-xl font-bold transition-opacity hover:opacity-80"
       >
         <img src="/icon.svg" className="size-7" alt="ShelfMatch" /> ShelfMatch
       </Link>
-      <Card className="w-full max-w-sm shadow-lg shadow-foreground/5">
+      <Card className="shadow-foreground/5 w-full max-w-sm shadow-lg">
         <CardHeader className="pb-4">
           <CardTitle className="text-xl font-bold">Something went wrong</CardTitle>
           <CardDescription>
@@ -33,12 +33,12 @@ export default function GlobalError({
           </CardDescription>
         </CardHeader>
         <CardContent className="flex gap-2">
-          <Button onClick={reset} className="flex-1 h-10">
+          <Button onClick={reset} className="h-10 flex-1">
             Try again
           </Button>
           <Button
             variant="outline"
-            className="flex-1 h-10"
+            className="h-10 flex-1"
             render={<Link href="/dashboard" />}
             nativeButton={false}
           >
