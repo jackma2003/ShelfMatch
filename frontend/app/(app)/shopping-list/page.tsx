@@ -11,12 +11,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   useAddShoppingListItem,
   useShoppingListItems,
   type ShoppingListItem,
 } from "@/hooks/use-shopping-list";
+import { ApiError } from "@/lib/api-client";
 
 const manualAddSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -106,6 +106,11 @@ export default function ShoppingListPage() {
               />
               {errors.unit && <p className="text-destructive text-sm">{errors.unit.message}</p>}
             </div>
+            {addItem.isError && (
+              <p className="bg-destructive/10 text-destructive col-span-2 rounded-lg px-3 py-2 text-sm">
+                {addItem.error instanceof ApiError ? addItem.error.message : "Something went wrong"}
+              </p>
+            )}
             <div className="col-span-2">
               <Button type="submit" disabled={addItem.isPending} className="h-9">
                 {addItem.isPending ? "Adding..." : "Add to list"}
@@ -127,9 +132,19 @@ export default function ShoppingListPage() {
         </div>
 
         {isLoading && (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-12" />
+          <div className="space-y-6">
+            {[1, 2].map((g) => (
+              <div key={g}>
+                <div className="skeleton-shimmer mb-2 h-3 w-24 rounded" />
+                <Card className="gap-0 px-4 py-0">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="flex items-center gap-3 border-b py-3 last:border-b-0">
+                      <div className="skeleton-shimmer size-4.5 shrink-0 rounded-md" />
+                      <div className="skeleton-shimmer h-4 w-40 rounded" />
+                    </div>
+                  ))}
+                </Card>
+              </div>
             ))}
           </div>
         )}
@@ -162,11 +177,11 @@ export default function ShoppingListPage() {
                 <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-widest uppercase">
                   {groupName}
                 </h3>
-                <div className="bg-card rounded-2xl border px-4">
+                <Card className="gap-0 px-4 py-0">
                   {groupItems.map((item) => (
                     <ShoppingListItemRow key={item.id} item={item} />
                   ))}
-                </div>
+                </Card>
               </div>
             ))}
           </div>

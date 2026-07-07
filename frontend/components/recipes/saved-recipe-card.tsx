@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CalendarClock, CheckCircle2, ChefHat, Clock, Heart, Trash2 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,12 +18,11 @@ import {
   useUpdateSavedRecipeStatus,
   type SavedRecipe,
 } from "@/hooks/use-saved-recipes";
-import { cn } from "@/lib/utils";
 
 const STATUS_CONFIG = {
-  FAVORITE: { label: "Favorite", icon: Heart, className: "bg-rose-100 text-rose-700" },
-  COOKED: { label: "Cooked", icon: CheckCircle2, className: "bg-green-100 text-green-700" },
-  PLANNED: { label: "Planned", icon: CalendarClock, className: "bg-blue-100 text-blue-700" },
+  FAVORITE: { label: "Favorite", icon: Heart, variant: "favorite" as const },
+  COOKED: { label: "Cooked", icon: CheckCircle2, variant: "success" as const },
+  PLANNED: { label: "Planned", icon: CalendarClock, variant: "planned" as const },
 } as const;
 
 export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
@@ -60,28 +60,18 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
           {recipe.description}
         </p>
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          <span className="text-muted-foreground bg-muted inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs">
-            <Clock className="size-3" /> {recipe.cookTimeMinutes} min
-          </span>
+          <Badge variant="muted">
+            <Clock /> {recipe.cookTimeMinutes} min
+          </Badge>
           {hasMatchInfo && (
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                fullMatch ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700",
-              )}
-            >
+            <Badge variant={fullMatch ? "success" : "warning"}>
               {recipe.matchedCount}/{recipe.totalCount} ingredients
-            </span>
+            </Badge>
           )}
           {statusCfg && (
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
-                statusCfg.className,
-              )}
-            >
-              <statusCfg.icon className="size-3" /> {statusCfg.label}
-            </span>
+            <Badge variant={statusCfg.variant}>
+              <statusCfg.icon /> {statusCfg.label}
+            </Badge>
           )}
         </div>
       </div>

@@ -55,7 +55,7 @@ export function ShoppingListItemRow({ item }: { item: ShoppingListItem }) {
         disabled={deleteItem.isPending}
         onClick={() => deleteItem.mutate(item.id)}
         aria-label={`Remove ${item.name}`}
-        className="text-muted-foreground hover:text-destructive shrink-0 opacity-100 transition-all md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+        className="text-muted-foreground hover:text-destructive shrink-0 opacity-100 transition-all md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
       >
         <Trash2 className="size-3.5" />
       </Button>

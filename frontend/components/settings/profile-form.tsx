@@ -49,7 +49,6 @@ export function ProfileForm({ user }: { user: User }) {
                 : "Something went wrong"}
             </p>
           )}
-          {updateProfile.isSuccess && <p className="text-sm text-green-600">Saved.</p>}
           <Button type="submit" disabled={updateProfile.isPending} className="h-9">
             {updateProfile.isPending ? "Saving..." : "Save changes"}
           </Button>

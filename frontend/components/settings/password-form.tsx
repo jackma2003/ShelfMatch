@@ -81,7 +81,6 @@ export function PasswordForm({ user }: { user: User }) {
                 : "Something went wrong"}
             </p>
           )}
-          {changePassword.isSuccess && <p className="text-sm text-green-600">Password updated.</p>}
           <Button type="submit" disabled={changePassword.isPending} className="h-9">
             {changePassword.isPending ? "Updating..." : "Update password"}
           </Button>

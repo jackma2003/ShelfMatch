@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { ChefHat, Clock } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { Recipe } from "@/hooks/use-recipes";
 import { cn } from "@/lib/utils";
 
 const DIFFICULTY_CONFIG = {
-  EASY: { label: "Easy", className: "bg-green-100 text-green-700" },
-  MEDIUM: { label: "Medium", className: "bg-amber-100 text-amber-700" },
-  HARD: { label: "Hard", className: "bg-red-100 text-red-700" },
+  EASY: { label: "Easy", variant: "success" as const },
+  MEDIUM: { label: "Medium", variant: "warning" as const },
+  HARD: { label: "Hard", variant: "destructive" as const },
 } as const;
 
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
@@ -42,17 +43,10 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
 
           {/* Metadata chips */}
           <div className="flex flex-wrap gap-1.5">
-            <span className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium">
-              <Clock className="size-3.5" /> {recipe.cookTimeMinutes} min
-            </span>
-            <span
-              className={cn(
-                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                difficulty.className,
-              )}
-            >
-              {difficulty.label}
-            </span>
+            <Badge variant="muted">
+              <Clock /> {recipe.cookTimeMinutes} min
+            </Badge>
+            <Badge variant={difficulty.variant}>{difficulty.label}</Badge>
           </div>
 
           {/* Ingredient match */}
@@ -60,9 +54,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Ingredients you have</span>
-                <span
-                  className={cn("font-semibold", fullMatch ? "text-green-600" : "text-amber-600")}
-                >
+                <span className={cn("font-semibold", fullMatch ? "text-success" : "text-primary")}>
                   {recipe.matchedCount}/{recipe.totalCount}
                 </span>
               </div>
@@ -70,7 +62,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
-                    fullMatch ? "bg-green-500" : "bg-amber-400",
+                    fullMatch ? "bg-success" : "bg-primary",
                   )}
                   style={{ width: `${matchPercent}%` }}
                 />

@@ -4,6 +4,7 @@ import { AlertTriangle, CalendarClock } from "lucide-react";
 import { useState } from "react";
 
 import { PantryItemForm } from "@/components/pantry/pantry-item-form";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +16,6 @@ import {
 import { useDeletePantryItem, useUpdatePantryItem, type PantryItem } from "@/hooks/use-pantry";
 import { daysUntil } from "@/lib/date";
 import type { PantryItemFormValues } from "@/lib/validators/pantry";
-import { cn } from "@/lib/utils";
 
 function ExpiryPill({ expirationDate }: { expirationDate: string | null }) {
   if (!expirationDate) return null;
@@ -26,15 +26,10 @@ function ExpiryPill({ expirationDate }: { expirationDate: string | null }) {
   const urgent = days <= 2;
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-        urgent ? "bg-red-100 text-red-700" : "bg-amber-100/70 text-amber-700",
-      )}
-    >
-      {urgent ? <AlertTriangle className="size-3" /> : <CalendarClock className="size-3" />}
+    <Badge variant={urgent ? "destructive" : "warning"}>
+      {urgent ? <AlertTriangle /> : <CalendarClock />}
       {label}
-    </span>
+    </Badge>
   );
 }
 
@@ -58,7 +53,7 @@ export function PantryItemRow({ item }: { item: PantryItem }) {
           {item.quantity} {item.unit}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+      <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
           <DialogTrigger render={<Button variant="ghost" size="sm" />}>Edit</DialogTrigger>
           <DialogContent>

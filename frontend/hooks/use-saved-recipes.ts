@@ -32,6 +32,7 @@ export function useSavedRecipes(status?: SavedRecipeStatus) {
 
 export function useSaveRecipe() {
   const queryClient = useQueryClient();
+  const toastManager = useToastManager();
   return useMutation({
     mutationFn: ({ recipeId, status }: { recipeId: string; status?: SavedRecipeStatus }) =>
       apiFetch<{ savedRecipe: SavedRecipe }>("/api/saved", {
@@ -40,12 +41,14 @@ export function useSaveRecipe() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SAVED_QUERY_KEY });
+      toastManager.add({ title: "Saved recipe" });
     },
   });
 }
 
 export function useUpdateSavedRecipeStatus() {
   const queryClient = useQueryClient();
+  const toastManager = useToastManager();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: SavedRecipeStatus }) =>
       apiFetch<{ savedRecipe: SavedRecipe }>(`/api/saved/${id}`, {
@@ -54,6 +57,7 @@ export function useUpdateSavedRecipeStatus() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SAVED_QUERY_KEY });
+      toastManager.add({ title: "Recipe updated" });
     },
   });
 }

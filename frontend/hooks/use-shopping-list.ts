@@ -35,6 +35,7 @@ interface ManualAddInput {
 
 export function useAddShoppingListItem() {
   const queryClient = useQueryClient();
+  const toastManager = useToastManager();
   return useMutation({
     mutationFn: (input: ManualAddInput) =>
       apiFetch<{ items: ShoppingListItem[] }>("/api/shopping-list", {
@@ -43,6 +44,7 @@ export function useAddShoppingListItem() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SHOPPING_LIST_QUERY_KEY });
+      toastManager.add({ title: "Added to your list" });
     },
   });
 }

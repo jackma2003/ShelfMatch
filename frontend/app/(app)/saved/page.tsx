@@ -5,9 +5,9 @@ import { AlertTriangle, CalendarClock, CheckCircle2, Heart, ListChecks } from "l
 
 import { SavedRecipeCard } from "@/components/recipes/saved-recipe-card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FilterButton } from "@/components/ui/filter-button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useSavedRecipes, type SavedRecipeStatus } from "@/hooks/use-saved-recipes";
 
 const FILTERS: {
@@ -23,12 +23,7 @@ const FILTERS: {
 
 export default function SavedRecipesPage() {
   const [filter, setFilter] = useState<SavedRecipeStatus | undefined>(undefined);
-  const {
-    data: savedRecipes,
-    isLoading,
-    isError,
-    refetch,
-  } = useSavedRecipes(filter);
+  const { data: savedRecipes, isLoading, isError, refetch } = useSavedRecipes(filter);
 
   return (
     <main className="mx-auto max-w-3xl space-y-8 px-6 py-10">
@@ -57,7 +52,17 @@ export default function SavedRecipesPage() {
       {isLoading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-28" />
+            <Card key={i} className="flex-col gap-3 p-5 sm:flex-row sm:items-start">
+              <div className="skeleton-shimmer h-32 w-full shrink-0 rounded-xl sm:h-20 sm:w-20" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="skeleton-shimmer h-4 w-1/2 rounded" />
+                <div className="skeleton-shimmer h-3 w-full rounded" />
+                <div className="flex gap-2 pt-1">
+                  <div className="skeleton-shimmer h-5 w-16 rounded-full" />
+                  <div className="skeleton-shimmer h-5 w-20 rounded-full" />
+                </div>
+              </div>
+            </Card>
           ))}
         </div>
       )}

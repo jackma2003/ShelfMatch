@@ -32,6 +32,7 @@ export function usePantryItems(sort?: "expiring") {
 
 export function useCreatePantryItem() {
   const queryClient = useQueryClient();
+  const toastManager = useToastManager();
   return useMutation({
     mutationFn: (input: PantryItemFormValues) =>
       apiFetch<{ item: PantryItem }>("/api/pantry", {
@@ -40,12 +41,14 @@ export function useCreatePantryItem() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PANTRY_QUERY_KEY });
+      toastManager.add({ title: "Added to pantry" });
     },
   });
 }
 
 export function useUpdatePantryItem() {
   const queryClient = useQueryClient();
+  const toastManager = useToastManager();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: PantryItemFormValues }) =>
       apiFetch<{ item: PantryItem }>(`/api/pantry/${id}`, {
@@ -54,6 +57,7 @@ export function useUpdatePantryItem() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PANTRY_QUERY_KEY });
+      toastManager.add({ title: "Pantry item updated" });
     },
   });
 }

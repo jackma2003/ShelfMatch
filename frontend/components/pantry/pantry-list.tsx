@@ -17,8 +17,8 @@ import {
 
 import { PantryItemRow } from "@/components/pantry/pantry-item-row";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
 import { usePantryItems, type PantryItem } from "@/hooks/use-pantry";
 import { PANTRY_CATEGORY_LABELS, type PantryCategory } from "@/lib/pantry-categories";
 
@@ -59,11 +59,36 @@ function ItemGroup({ category, items }: { category: PantryCategory; items: Pantr
         </h3>
         <span className="text-muted-foreground ml-auto text-xs">{items.length}</span>
       </div>
-      <div className="bg-card rounded-2xl border px-4">
+      <Card className="gap-0 px-4 py-0">
         {items.map((item) => (
           <PantryItemRow key={item.id} item={item} />
         ))}
-      </div>
+      </Card>
+    </div>
+  );
+}
+
+function PantryListSkeleton() {
+  return (
+    <div className="space-y-5">
+      {[1, 2].map((g) => (
+        <div key={g}>
+          <div className="mb-2 flex items-center gap-2">
+            <div className="skeleton-shimmer size-4 rounded" />
+            <div className="skeleton-shimmer h-3 w-24 rounded" />
+          </div>
+          <Card className="gap-0 px-4 py-0">
+            {[1, 2].map((i) => (
+              <div key={i} className="flex items-center gap-3 border-b py-3 last:border-b-0">
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <div className="skeleton-shimmer h-4 w-32 rounded" />
+                  <div className="skeleton-shimmer h-3 w-16 rounded" />
+                </div>
+              </div>
+            ))}
+          </Card>
+        </div>
+      ))}
     </div>
   );
 }
@@ -77,13 +102,7 @@ export function PantryList({ sortExpiring }: { sortExpiring: boolean }) {
   } = usePantryItems(sortExpiring ? "expiring" : undefined);
 
   if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-16" />
-        ))}
-      </div>
-    );
+    return <PantryListSkeleton />;
   }
 
   if (isError) {
@@ -113,11 +132,11 @@ export function PantryList({ sortExpiring }: { sortExpiring: boolean }) {
 
   if (sortExpiring) {
     return (
-      <div className="bg-card rounded-2xl border px-4">
+      <Card className="gap-0 px-4 py-0">
         {items.map((item) => (
           <PantryItemRow key={item.id} item={item} />
         ))}
-      </div>
+      </Card>
     );
   }
 

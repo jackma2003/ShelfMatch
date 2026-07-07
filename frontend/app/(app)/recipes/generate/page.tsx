@@ -168,7 +168,7 @@ export default function GenerateRecipesPage() {
 
       {/* Error state */}
       {generate.isError && (
-        <div className="bg-destructive/10 space-y-2 rounded-xl px-4 py-3">
+        <div className="bg-destructive/10 space-y-2 rounded-lg px-3 py-2">
           <p className="text-destructive text-sm font-medium">{errorMessage}</p>
           {generate.error instanceof ApiError && generate.error.code === "EMPTY_PANTRY" && (
             <Link

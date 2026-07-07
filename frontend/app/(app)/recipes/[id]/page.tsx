@@ -6,16 +6,17 @@ import { ArrowLeft, CheckCircle2, Clock, XCircle } from "lucide-react";
 
 import { AddMissingButton } from "@/components/recipes/add-missing-button";
 import { SaveRecipeButton } from "@/components/recipes/save-recipe-button";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useRecipe } from "@/hooks/use-recipes";
 import { cn } from "@/lib/utils";
 
 const DIFFICULTY_CONFIG = {
-  EASY: { label: "Easy", className: "bg-green-100 text-green-700" },
-  MEDIUM: { label: "Medium", className: "bg-amber-100 text-amber-700" },
-  HARD: { label: "Hard", className: "bg-red-100 text-red-700" },
+  EASY: { label: "Easy", variant: "success" as const },
+  MEDIUM: { label: "Medium", variant: "warning" as const },
+  HARD: { label: "Hard", variant: "destructive" as const },
 } as const;
 
 export default function RecipeDetailPage() {
@@ -25,11 +26,29 @@ export default function RecipeDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto max-w-2xl space-y-6 px-6 py-10">
+      <main className="mx-auto max-w-2xl space-y-8 px-6 py-10">
+        <div className="skeleton-shimmer h-8 w-20 rounded-lg" />
+        <div className="skeleton-shimmer h-48 w-full rounded-2xl sm:h-64" />
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <div className="skeleton-shimmer h-7 w-2/3 rounded" />
+            <div className="skeleton-shimmer h-4 w-full rounded" />
+          </div>
+          <div className="flex gap-2">
+            <div className="skeleton-shimmer h-6 w-20 rounded-full" />
+            <div className="skeleton-shimmer h-6 w-20 rounded-full" />
+            <div className="skeleton-shimmer h-6 w-28 rounded-full" />
+          </div>
+        </div>
         <div className="space-y-3">
-          <Skeleton className="h-8 w-2/3" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
+          <div className="skeleton-shimmer h-5 w-24 rounded" />
+          <Card className="gap-0 py-0">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-3 border-b px-4 py-2.5 last:border-b-0">
+                <div className="skeleton-shimmer h-4 w-full rounded" />
+              </div>
+            ))}
+          </Card>
         </div>
       </main>
     );
@@ -86,31 +105,19 @@ export default function RecipeDetailPage() {
 
         {/* Chips */}
         <div className="flex flex-wrap gap-2">
-          <span className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium">
-            <Clock className="size-3.5" /> {recipe.cookTimeMinutes} min
-          </span>
-          <span
-            className={cn(
-              "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium",
-              difficulty.className,
-            )}
-          >
-            {difficulty.label}
-          </span>
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium",
-              fullMatch ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700",
-            )}
-          >
+          <Badge variant="muted">
+            <Clock /> {recipe.cookTimeMinutes} min
+          </Badge>
+          <Badge variant={difficulty.variant}>{difficulty.label}</Badge>
+          <Badge variant={fullMatch ? "success" : "warning"}>
             {fullMatch ? "✓" : "~"} {recipe.matchedCount}/{recipe.totalCount} ingredients
-          </span>
+          </Badge>
         </div>
 
         {/* Match bar */}
         <div className="bg-muted h-2 overflow-hidden rounded-full">
           <div
-            className={cn("h-full rounded-full", fullMatch ? "bg-green-500" : "bg-amber-400")}
+            className={cn("h-full rounded-full", fullMatch ? "bg-success" : "bg-primary")}
             style={{ width: `${matchPercent}%` }}
           />
         </div>
@@ -125,11 +132,11 @@ export default function RecipeDetailPage() {
       {/* Ingredients */}
       <div className="space-y-3">
         <h2 className="text-base font-semibold">Ingredients</h2>
-        <div className="bg-card divide-y rounded-2xl border">
+        <Card className="gap-0 divide-y py-0">
           {recipe.ingredients.map((ingredient) => (
             <div key={ingredient.id} className="flex items-center gap-3 px-4 py-2.5">
               {ingredient.inPantry ? (
-                <CheckCircle2 className="size-4 shrink-0 text-green-500" />
+                <CheckCircle2 className="text-success size-4 shrink-0" />
               ) : (
                 <XCircle className="text-muted-foreground/40 size-4 shrink-0" />
               )}
@@ -146,7 +153,7 @@ export default function RecipeDetailPage() {
               </span>
             </div>
           ))}
-        </div>
+        </Card>
       </div>
 
       {/* Instructions */}
