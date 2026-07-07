@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { AlertTriangle, Heart } from "lucide-react";
 
 import { RecipeCard } from "@/components/recipes/recipe-card";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSavedRecipes } from "@/hooks/use-saved-recipes";
@@ -11,7 +12,7 @@ import { useSavedRecipes } from "@/hooks/use-saved-recipes";
 const PREVIEW_COUNT = 3;
 
 export function SavedRecipesPreview() {
-  const { data: savedRecipes, isLoading } = useSavedRecipes();
+  const { data: savedRecipes, isLoading, isError, refetch } = useSavedRecipes();
   const preview = (savedRecipes ?? []).slice(0, PREVIEW_COUNT);
 
   return (
@@ -34,6 +35,17 @@ export function SavedRecipesPreview() {
             <Skeleton key={i} className="h-52" />
           ))}
         </div>
+      ) : isError ? (
+        <EmptyState
+          icon={AlertTriangle}
+          title="Couldn't load saved recipes"
+          description="Something went wrong on our end. Try again?"
+          action={
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              Try again
+            </Button>
+          }
+        />
       ) : preview.length === 0 ? (
         <EmptyState
           icon={Heart}

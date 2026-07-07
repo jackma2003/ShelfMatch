@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarClock, CheckCircle2, Heart, ListChecks } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, Heart, ListChecks } from "lucide-react";
 
 import { SavedRecipeCard } from "@/components/recipes/saved-recipe-card";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FilterButton } from "@/components/ui/filter-button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,7 +23,12 @@ const FILTERS: {
 
 export default function SavedRecipesPage() {
   const [filter, setFilter] = useState<SavedRecipeStatus | undefined>(undefined);
-  const { data: savedRecipes, isLoading } = useSavedRecipes(filter);
+  const {
+    data: savedRecipes,
+    isLoading,
+    isError,
+    refetch,
+  } = useSavedRecipes(filter);
 
   return (
     <main className="mx-auto max-w-3xl space-y-8 px-6 py-10">
@@ -56,8 +62,22 @@ export default function SavedRecipesPage() {
         </div>
       )}
 
+      {/* Error state */}
+      {!isLoading && isError && (
+        <EmptyState
+          icon={AlertTriangle}
+          title="Couldn't load your saved recipes"
+          description="Something went wrong on our end. Try again?"
+          action={
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              Try again
+            </Button>
+          }
+        />
+      )}
+
       {/* Empty state */}
-      {!isLoading && (!savedRecipes || savedRecipes.length === 0) && (
+      {!isLoading && !isError && (!savedRecipes || savedRecipes.length === 0) && (
         <EmptyState
           icon={Heart}
           title="Nothing saved yet"

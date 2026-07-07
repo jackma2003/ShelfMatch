@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useShoppingListItems } from "@/hooks/use-shopping-list";
 
 export function ShoppingListSummaryCard() {
-  const { data: items, isLoading } = useShoppingListItems();
+  const { data: items, isLoading, isError, refetch } = useShoppingListItems();
 
   if (isLoading) {
     return (
@@ -18,6 +18,23 @@ export function ShoppingListSummaryCard() {
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-8 w-24" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="flex h-full flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="text-muted-foreground size-4" />
+            <h3 className="font-semibold">Shopping list</h3>
+          </div>
+          <p className="text-muted-foreground flex-1 text-sm">Couldn&apos;t load your list.</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="self-start">
+            Try again
+          </Button>
         </CardContent>
       </Card>
     );

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ShoppingCart } from "lucide-react";
+import { AlertTriangle, ShoppingCart } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -38,7 +38,7 @@ function groupByRecipe(items: ShoppingListItem[]): [string, ShoppingListItem[]][
 }
 
 export default function ShoppingListPage() {
-  const { data: items, isLoading } = useShoppingListItems();
+  const { data: items, isLoading, isError, refetch } = useShoppingListItems();
   const addItem = useAddShoppingListItem();
   const {
     register,
@@ -134,7 +134,20 @@ export default function ShoppingListPage() {
           </div>
         )}
 
-        {!isLoading && (!items || items.length === 0) && (
+        {!isLoading && isError && (
+          <EmptyState
+            icon={AlertTriangle}
+            title="Couldn't load your list"
+            description="Something went wrong on our end. Try again?"
+            action={
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Try again
+              </Button>
+            }
+          />
+        )}
+
+        {!isLoading && !isError && (!items || items.length === 0) && (
           <EmptyState
             icon={ShoppingCart}
             title="Your list is empty"

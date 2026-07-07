@@ -86,7 +86,7 @@ export function Navbar() {
             {/* Compact mobile actions — bottom tab bar covers primary nav */}
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon-lg"
               render={<Link href="/settings" />}
               nativeButton={false}
               aria-label="Settings"
@@ -96,7 +96,7 @@ export function Navbar() {
             </Button>
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon-lg"
               onClick={handleLogout}
               disabled={logout.isPending}
               aria-label="Log out"

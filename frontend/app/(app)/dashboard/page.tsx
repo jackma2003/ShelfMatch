@@ -20,7 +20,7 @@ function greeting(name: string) {
 }
 
 function GenerateCta() {
-  const { data: items } = usePantryItems("expiring");
+  const { data: items } = usePantryItems();
   const pantryCount = items?.length ?? 0;
   const hasItems = pantryCount > 0;
 

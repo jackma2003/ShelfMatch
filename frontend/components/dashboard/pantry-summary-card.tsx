@@ -12,7 +12,7 @@ import { daysUntil } from "@/lib/date";
 const EXPIRING_WINDOW_DAYS = 5;
 
 export function PantrySummaryCard() {
-  const { data: items, isLoading } = usePantryItems("expiring");
+  const { data: items, isLoading, isError, refetch } = usePantryItems("expiring");
 
   if (isLoading) {
     return (
@@ -21,6 +21,23 @@ export function PantrySummaryCard() {
           <Skeleton className="h-5 w-24" />
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-8 w-24" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="flex h-full flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <Package className="text-muted-foreground size-4" />
+            <h3 className="font-semibold">Pantry</h3>
+          </div>
+          <p className="text-muted-foreground flex-1 text-sm">Couldn&apos;t load your pantry.</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="self-start">
+            Try again
+          </Button>
         </CardContent>
       </Card>
     );

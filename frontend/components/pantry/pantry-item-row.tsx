@@ -58,7 +58,7 @@ export function PantryItemRow({ item }: { item: PantryItem }) {
           {item.quantity} {item.unit}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
           <DialogTrigger render={<Button variant="ghost" size="sm" />}>Edit</DialogTrigger>
           <DialogContent>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock } from "lucide-react";
+import { ChefHat, Clock } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import type { Recipe } from "@/hooks/use-recipes";
@@ -22,8 +22,12 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link href={`/recipes/${recipe.id}`} className="group block h-full">
       <Card className="hover:ring-primary/30 h-full gap-0 py-0 transition-all hover:-translate-y-0.5 hover:shadow-md">
-        {recipe.imageUrl && (
+        {recipe.imageUrl ? (
           <img src={recipe.imageUrl} alt="" className="h-32 w-full object-cover" />
+        ) : (
+          <div className="from-primary/15 to-primary/5 flex h-32 w-full items-center justify-center bg-linear-to-br">
+            <ChefHat className="text-primary/40 size-8" />
+          </div>
         )}
         <div className="flex flex-1 flex-col gap-4 p-5">
           {/* Header */}

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AlertTriangle,
   Beef,
   Cookie,
   CupSoda,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { PantryItemRow } from "@/components/pantry/pantry-item-row";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePantryItems, type PantryItem } from "@/hooks/use-pantry";
@@ -67,7 +69,12 @@ function ItemGroup({ category, items }: { category: PantryCategory; items: Pantr
 }
 
 export function PantryList({ sortExpiring }: { sortExpiring: boolean }) {
-  const { data: items, isLoading } = usePantryItems(sortExpiring ? "expiring" : undefined);
+  const {
+    data: items,
+    isLoading,
+    isError,
+    refetch,
+  } = usePantryItems(sortExpiring ? "expiring" : undefined);
 
   if (isLoading) {
     return (
@@ -76,6 +83,21 @@ export function PantryList({ sortExpiring }: { sortExpiring: boolean }) {
           <Skeleton key={i} className="h-16" />
         ))}
       </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <EmptyState
+        icon={AlertTriangle}
+        title="Couldn't load your pantry"
+        description="Something went wrong on our end. Try again?"
+        action={
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            Try again
+          </Button>
+        }
+      />
     );
   }
 
