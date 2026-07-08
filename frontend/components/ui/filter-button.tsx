@@ -13,6 +13,7 @@ export function FilterButton({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
         "focus-visible:ring-ring/50 inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all focus-visible:ring-3 focus-visible:outline-none",
         active

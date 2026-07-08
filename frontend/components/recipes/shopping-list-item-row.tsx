@@ -51,7 +51,7 @@ export function ShoppingListItemRow({ item }: { item: ShoppingListItem }) {
       </label>
       <Button
         variant="ghost"
-        size="icon-sm"
+        size="icon"
         disabled={deleteItem.isPending}
         onClick={() => deleteItem.mutate(item)}
         aria-label={`Remove ${item.name}`}

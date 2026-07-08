@@ -125,7 +125,7 @@ export default function RecipeDetailPage() {
         {/* Actions */}
         <div className="flex gap-2">
           <SaveRecipeButton recipeId={recipe.id} />
-          <AddMissingButton recipeId={recipe.id} />
+          {!fullMatch && <AddMissingButton recipeId={recipe.id} />}
         </div>
       </div>
 

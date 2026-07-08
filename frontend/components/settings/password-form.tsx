@@ -70,8 +70,10 @@ export function PasswordForm({ user }: { user: User }) {
               className="h-10"
               {...register("newPassword")}
             />
-            {errors.newPassword && (
+            {errors.newPassword ? (
               <p className="text-destructive text-sm">{errors.newPassword.message}</p>
+            ) : (
+              <p className="text-muted-foreground text-sm">At least 8 characters.</p>
             )}
           </div>
           {changePassword.isError && (

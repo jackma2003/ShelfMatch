@@ -88,6 +88,7 @@ export default function ShoppingListPage() {
                 id="sl-quantity"
                 type="number"
                 step="any"
+                min="0"
                 placeholder="1"
                 className="h-10"
                 {...register("quantity")}

@@ -95,8 +95,10 @@ export function SignupForm() {
               placeholder="••••••••"
               {...register("password")}
             />
-            {errors.password && (
+            {errors.password ? (
               <p className="text-destructive text-sm">{errors.password.message}</p>
+            ) : (
+              <p className="text-muted-foreground text-sm">At least 8 characters.</p>
             )}
           </div>
           {signup.isError && (

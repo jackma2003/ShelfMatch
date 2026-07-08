@@ -78,6 +78,7 @@ export function PantryItemForm({
             id={quantityId}
             type="number"
             step="any"
+            min="0"
             placeholder="0"
             className="h-10"
             {...register("quantity")}

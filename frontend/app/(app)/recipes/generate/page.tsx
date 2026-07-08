@@ -13,9 +13,15 @@ import { ApiError } from "@/lib/api-client";
 
 const STORAGE_KEY = "shelfmatch:generated-recipes";
 
+interface GenerationFilters {
+  quickOnly: boolean;
+  dietaryTag: DietaryTag | undefined;
+}
+
 interface PersistedGeneration {
   recipes: Recipe[];
   generatedAt: number;
+  filters?: GenerationFilters;
 }
 
 function relativeTime(timestamp: number): string {
@@ -122,6 +128,11 @@ export default function GenerateRecipesPage() {
   });
 
   const displayedRecipes = persisted?.recipes ?? null;
+  // Only warn about staleness when we actually know what filters produced the cached
+  // results — legacy/unknown cache entries have no filters to compare against.
+  const filtersChanged =
+    !!persisted?.filters &&
+    (persisted.filters.quickOnly !== quickOnly || persisted.filters.dietaryTag !== dietaryTag);
 
   const handleClear = () => {
     generate.reset();
@@ -136,11 +147,12 @@ export default function GenerateRecipesPage() {
 
   const handleGenerate = () => {
     setGenerationCount((count) => count + 1);
+    const filters: GenerationFilters = { quickOnly, dietaryTag };
     generate.mutate(
       { maxCookTimeMinutes: quickOnly ? 20 : undefined, dietaryTag },
       {
         onSuccess: ({ recipes }) => {
-          const generation: PersistedGeneration = { recipes, generatedAt: Date.now() };
+          const generation: PersistedGeneration = { recipes, generatedAt: Date.now(), filters };
           setPersisted(generation);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(generation));
         },
@@ -243,6 +255,23 @@ export default function GenerateRecipesPage() {
               Clear
             </button>
           </div>
+
+          {filtersChanged && (
+            <div className="bg-primary/10 flex flex-wrap items-center justify-between gap-3 rounded-lg px-3 py-2">
+              <p className="text-primary text-sm font-medium">
+                These results are from before you changed filters.
+              </p>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleGenerate}
+                disabled={generate.isPending}
+                className="shrink-0"
+              >
+                Regenerate
+              </Button>
+            </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             {displayedRecipes.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />

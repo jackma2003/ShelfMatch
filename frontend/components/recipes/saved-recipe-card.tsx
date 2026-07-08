@@ -101,7 +101,7 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
         </Select>
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           disabled={unsave.isPending}
           onClick={() => unsave.mutate(savedRecipe)}
           aria-label="Remove from saved"
