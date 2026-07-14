@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarClock, CheckCircle2, ChefHat, Clock, Heart, Trash2 } from "lucide-react";
+import { CalendarClock, CheckCircle2, Clock, Heart, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { RecipeImage } from "@/components/recipes/recipe-image";
 import {
   Select,
   SelectContent,
@@ -50,17 +51,11 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
       <div className="overflow-hidden">
         <Card className="group hover:ring-primary/30 flex-col gap-3 p-5 transition-all sm:flex-row sm:items-start">
           <div className="shrink-0">
-            {recipe.imageUrl ? (
-              <img
-                src={recipe.imageUrl}
-                alt=""
-                className="h-32 w-full rounded-xl object-cover sm:h-20 sm:w-20"
-              />
-            ) : (
-              <div className="from-primary/15 to-primary/5 flex h-32 w-full items-center justify-center rounded-xl bg-linear-to-br sm:h-20 sm:w-20">
-                <ChefHat className="text-primary/40 size-6" />
-              </div>
-            )}
+            <RecipeImage
+              imageUrl={recipe.imageUrl}
+              className="h-32 w-full rounded-xl sm:h-20 sm:w-20"
+              iconClassName="size-6"
+            />
           </div>
           {/* Content */}
           <div className="min-w-0 flex-1 space-y-1">

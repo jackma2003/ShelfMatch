@@ -52,8 +52,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   // Default to a cache miss unless a test explicitly sets up a cached batch.
   mockPrisma.recipeGenerationBatch.findFirst.mockResolvedValue(null);
-  // Default to "no image found" unless a test explicitly configures one.
-  mockGetRecipeImageUrl.mockResolvedValue(null);
+  // getRecipeImageUrl never actually resolves to null (it falls back internally) — default
+  // to a found image unless a test explicitly configures something else.
+  mockGetRecipeImageUrl.mockResolvedValue("https://images.unsplash.com/photo-123");
 });
 
 describe("generateRecipes", () => {
@@ -147,7 +148,7 @@ describe("generateRecipes", () => {
     expect(unfilteredHash.where.pantryHash).not.toBe(filteredHash.where.pantryHash);
   });
 
-  it("returns immediately with no image, then attaches one in the background once found", async () => {
+  it("resolves each recipe's image before persisting, so the response already includes it", async () => {
     mockPrisma.pantryItem.findMany.mockResolvedValue(pantryItems);
     mockGenerateJson.mockResolvedValue(JSON.stringify(validAiResponse));
     mockGetRecipeImageUrl.mockResolvedValue("https://images.unsplash.com/photo-123");
@@ -159,35 +160,38 @@ describe("generateRecipes", () => {
 
     const [recipe] = await generateRecipes(USER_ID);
 
-    // The response shouldn't wait on Unsplash — recipes come back image-less immediately.
-    expect(recipe.imageUrl).toBeNull();
+    // The response must already carry the image — this is the actual bug: an earlier version
+    // persisted with `imageUrl: null` and attached it in the background *after* responding, so
+    // the "Generate meals" page (which renders straight from this response) never showed it.
+    expect(mockGetRecipeImageUrl).toHaveBeenCalledWith("Garlic Chicken");
+    expect(recipe.imageUrl).toBe("https://images.unsplash.com/photo-123");
     const createCall = mockPrisma.recipe.create.mock.calls[0][0];
-    expect(createCall.data.imageUrl).toBeNull();
-
-    await vi.waitFor(() => {
-      expect(mockGetRecipeImageUrl).toHaveBeenCalledWith("Garlic Chicken");
-      expect(mockPrisma.recipe.update).toHaveBeenCalledWith({
-        where: { id: "recipe-1" },
-        data: { imageUrl: "https://images.unsplash.com/photo-123" },
-      });
-    });
+    expect(createCall.data.imageUrl).toBe("https://images.unsplash.com/photo-123");
+    expect(mockPrisma.recipe.update).not.toHaveBeenCalled();
   });
 
-  it("still generates successfully with no image, and skips the update, when the lookup finds nothing", async () => {
+  it("still resolves an image per recipe when generating multiple recipes at once", async () => {
+    const twoRecipeResponse = {
+      recipes: [
+        validAiResponse.recipes[0],
+        { ...validAiResponse.recipes[0], title: "Chicken Soup" },
+      ],
+    };
     mockPrisma.pantryItem.findMany.mockResolvedValue(pantryItems);
-    mockGenerateJson.mockResolvedValue(JSON.stringify(validAiResponse));
-    mockGetRecipeImageUrl.mockResolvedValue(null);
+    mockGenerateJson.mockResolvedValue(JSON.stringify(twoRecipeResponse));
+    mockGetRecipeImageUrl.mockImplementation(async (title: string) => `https://img/${title}`);
+    let nextId = 0;
     mockPrisma.recipe.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
-      id: "recipe-1",
+      id: `recipe-${nextId++}`,
       ...data,
       ingredients: (data.ingredients as { create: Record<string, unknown>[] }).create,
     }));
 
-    const [recipe] = await generateRecipes(USER_ID);
+    const recipes = await generateRecipes(USER_ID);
 
-    expect(recipe.imageUrl).toBeNull();
-    await vi.waitFor(() => expect(mockGetRecipeImageUrl).toHaveBeenCalled());
-    expect(mockPrisma.recipe.update).not.toHaveBeenCalled();
+    expect(recipes).toHaveLength(2);
+    expect(recipes[0].imageUrl).toBe("https://img/Garlic Chicken");
+    expect(recipes[1].imageUrl).toBe("https://img/Chicken Soup");
   });
 
   it("returns a cached batch and never calls Gemini when the pantry is unchanged", async () => {

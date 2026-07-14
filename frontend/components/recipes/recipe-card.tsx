@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ChefHat, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { RecipeImage } from "@/components/recipes/recipe-image";
 import type { Recipe } from "@/hooks/use-recipes";
 import { cn } from "@/lib/utils";
 
@@ -34,13 +35,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link href={`/recipes/${recipe.id}`} className="group block h-full">
       <Card className="hover:ring-primary/30 h-full gap-0 py-0 transition-all hover:-translate-y-0.5 hover:shadow-md">
-        {recipe.imageUrl ? (
-          <img src={recipe.imageUrl} alt="" className="h-32 w-full object-cover" />
-        ) : (
-          <div className="from-primary/15 to-primary/5 flex h-32 w-full items-center justify-center bg-linear-to-br">
-            <ChefHat className="text-primary/40 size-8" />
-          </div>
-        )}
+        <RecipeImage imageUrl={recipe.imageUrl} className="h-32 w-full" iconClassName="size-8" />
         <div className="flex flex-1 flex-col gap-4 p-5">
           {/* Header */}
           <div className="flex-1">

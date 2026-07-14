@@ -82,27 +82,20 @@ Respond with ONLY valid JSON (no markdown code fences, no commentary) matching e
 }`;
 }
 
-// Stock photos are decorative, and Unsplash is the slowest thing standing between "Gemini
-// responded" and "user sees their recipes." Recipes are persisted and returned without
-// waiting on images; this fills them in afterward so the next page load has them.
-async function attachRecipeImages(
-  persisted: { id: string }[],
-  recipes: AiRecipe[],
-): Promise<void> {
-  await Promise.all(
-    persisted.map(async (recipe, i) => {
-      try {
-        const imageUrl = await getRecipeImageUrl(recipes[i].title);
-        if (!imageUrl) return;
-        await prisma.recipe.update({ where: { id: recipe.id }, data: { imageUrl } });
-      } catch (error) {
-        console.error(`Failed to attach image for recipe ${recipe.id}:`, error);
-      }
-    }),
-  );
+// Looked up for every recipe in parallel (not one-by-one) so the added latency is bounded by
+// the slowest single lookup rather than N × lookup time — getRecipeImageUrl itself has a
+// request timeout and always resolves to a real URL (search result or local fallback), so
+// this can safely be awaited before responding instead of attaching images in the background
+// after the fact. (An earlier version of this function persisted recipes with `imageUrl:
+// null` and attached images via a fire-and-forget call after the response was already sent —
+// that meant the response the "Generate meals" page actually renders never had images, only a
+// later live re-fetch of the same recipe from the DB would. Resolving them up front fixes
+// that at the cost of the once-per-batch lookup latency, which the timeout above bounds.)
+async function resolveRecipeImages(recipes: AiRecipe[]): Promise<string[]> {
+  return Promise.all(recipes.map((recipe) => getRecipeImageUrl(recipe.title)));
 }
 
-async function persistRecipe(recipe: AiRecipe, imageUrl: string | null) {
+async function persistRecipe(recipe: AiRecipe, imageUrl: string) {
   return prisma.recipe.create({
     data: {
       title: recipe.title,
@@ -173,15 +166,14 @@ export async function generateRecipes(userId: string, filters: GenerateRecipesIn
     throw new HttpError(502, "AI service response didn't match the expected format", "AI_INVALID_SHAPE");
   }
 
+  const imageUrls = await resolveRecipeImages(result.data.recipes);
   const persisted = await Promise.all(
-    result.data.recipes.map((recipe) => persistRecipe(recipe, null)),
+    result.data.recipes.map((recipe, i) => persistRecipe(recipe, imageUrls[i])),
   );
 
   await prisma.recipeGenerationBatch.create({
     data: { userId, pantryHash: requestHash, recipeIds: persisted.map((recipe) => recipe.id) },
   });
-
-  void attachRecipeImages(persisted, result.data.recipes);
 
   return persisted.map((recipe) => withMatchInfo(recipe, pantryNames));
 }

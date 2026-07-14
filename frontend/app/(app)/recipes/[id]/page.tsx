@@ -6,6 +6,7 @@ import { ArrowLeft, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AddMissingButton } from "@/components/recipes/add-missing-button";
+import { RecipeImage } from "@/components/recipes/recipe-image";
 import { SaveRecipeButton } from "@/components/recipes/save-recipe-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -99,13 +100,11 @@ export default function RecipeDetailPage() {
         Back
       </Button>
 
-      {recipe.imageUrl && (
-        <img
-          src={recipe.imageUrl}
-          alt=""
-          className="h-48 w-full rounded-2xl object-cover sm:h-64"
-        />
-      )}
+      <RecipeImage
+        imageUrl={recipe.imageUrl}
+        className="h-48 w-full rounded-2xl sm:h-64"
+        iconClassName="size-10"
+      />
 
       {/* Header */}
       <div className="space-y-4">
