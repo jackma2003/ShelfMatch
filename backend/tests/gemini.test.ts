@@ -86,4 +86,21 @@ describe("generateJson", () => {
     await expect(generateJson("prompt")).rejects.toMatchObject({ statusCode: 504, code: "AI_TIMEOUT" });
     expect(mockGenerateContent).toHaveBeenCalledTimes(1);
   });
+
+  // The free tier's daily quota is shared across the whole project (not per-user), so this is
+  // realistic to hit from normal use, not just abuse — and before this fix it escaped as a raw,
+  // unclassified ApiError that the generic error handler turned into an opaque 500.
+  it("maps a 429 ApiError to AI_RATE_LIMITED without retrying", async () => {
+    mockGenerateContent.mockRejectedValue(new MockApiError("RESOURCE_EXHAUSTED", 429));
+
+    await expect(generateJson("prompt")).rejects.toMatchObject({ statusCode: 429, code: "AI_RATE_LIMITED" });
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("maps any other ApiError to a classified AI_REQUEST_FAILED instead of leaking the raw SDK error", async () => {
+    mockGenerateContent.mockRejectedValue(new MockApiError("INTERNAL", 500));
+
+    await expect(generateJson("prompt")).rejects.toMatchObject({ statusCode: 502, code: "AI_REQUEST_FAILED" });
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+  });
 });

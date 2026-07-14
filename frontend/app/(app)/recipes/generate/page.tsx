@@ -49,6 +49,8 @@ const FRIENDLY_ERRORS: Record<string, string> = {
   AI_INVALID_SHAPE: "The AI's response didn't look right. Try again.",
   AI_EMPTY_RESPONSE: "The AI didn't return anything. Try again.",
   AI_TIMEOUT: "This is taking longer than usual. Please try again.",
+  AI_RATE_LIMITED: "The AI service is busy right now — please try again in a few minutes.",
+  AI_REQUEST_FAILED: "The AI service had a hiccup. Please try again.",
 };
 
 // Progresses one message at a time and holds on the last one — never loops back, since a

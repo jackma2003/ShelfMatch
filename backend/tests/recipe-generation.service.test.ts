@@ -126,8 +126,8 @@ describe("generateRecipes", () => {
     await generateRecipes(USER_ID, { maxCookTimeMinutes: 20, dietaryTag: "vegetarian" });
 
     const prompt = mockGenerateJson.mock.calls[0][0] as string;
-    expect(prompt).toContain("Keep total cook time under 20 minutes.");
-    expect(prompt).toContain("Every recipe must be vegetarian.");
+    expect(prompt).toContain("Keep total cook time under 20 minutes");
+    expect(prompt).toContain("Every recipe must be strictly vegetarian");
   });
 
   it("treats different filters as a cache miss even with an unchanged pantry", async () => {
@@ -192,6 +192,81 @@ describe("generateRecipes", () => {
     expect(recipes).toHaveLength(2);
     expect(recipes[0].imageUrl).toBe("https://img/Garlic Chicken");
     expect(recipes[1].imageUrl).toBe("https://img/Chicken Soup");
+  });
+
+  it("retries once with feedback when Gemini's first response fails schema validation, then succeeds", async () => {
+    mockPrisma.pantryItem.findMany.mockResolvedValue(pantryItems);
+    mockGenerateJson
+      .mockResolvedValueOnce(JSON.stringify({ recipes: [{ title: "Missing everything else" }] }))
+      .mockResolvedValueOnce(JSON.stringify(validAiResponse));
+    mockPrisma.recipe.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
+      id: "recipe-1",
+      ...data,
+      ingredients: (data.ingredients as { create: Record<string, unknown>[] }).create,
+    }));
+
+    const [recipe] = await generateRecipes(USER_ID);
+
+    expect(mockGenerateJson).toHaveBeenCalledTimes(2);
+    // The retry prompt must carry concrete feedback about what was wrong, not just repeat
+    // the original prompt verbatim — otherwise a deterministic mistake just repeats itself.
+    const retryPrompt = mockGenerateJson.mock.calls[1][0] as string;
+    expect(retryPrompt).toContain("previous response was rejected");
+    expect(recipe.title).toBe("Garlic Chicken");
+  });
+
+  it("gives up after exhausting retry attempts on persistent schema violations", async () => {
+    mockPrisma.pantryItem.findMany.mockResolvedValue(pantryItems);
+    mockGenerateJson.mockResolvedValue(JSON.stringify({ recipes: [{ title: "Still missing everything" }] }));
+
+    await expect(generateRecipes(USER_ID, { dietaryTag: "vegan" })).rejects.toMatchObject({
+      statusCode: 502,
+      code: "AI_INVALID_SHAPE",
+    });
+    expect(mockGenerateJson).toHaveBeenCalledTimes(2);
+    expect(mockPrisma.recipe.create).not.toHaveBeenCalled();
+  });
+
+  it("drops recipes that exceed maxCookTimeMinutes while keeping ones that comply", async () => {
+    mockPrisma.pantryItem.findMany.mockResolvedValue(pantryItems);
+    mockGenerateJson.mockResolvedValue(
+      JSON.stringify({
+        recipes: [
+          { ...validAiResponse.recipes[0], title: "Quick one", cookTimeMinutes: 15 },
+          { ...validAiResponse.recipes[0], title: "Slow one", cookTimeMinutes: 45 },
+        ],
+      }),
+    );
+    mockPrisma.recipe.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
+      id: (data.title as string) === "Quick one" ? "recipe-quick" : "recipe-slow",
+      ...data,
+      ingredients: (data.ingredients as { create: Record<string, unknown>[] }).create,
+    }));
+
+    const recipes = await generateRecipes(USER_ID, { maxCookTimeMinutes: 20 });
+
+    expect(recipes).toHaveLength(1);
+    expect(recipes[0].title).toBe("Quick one");
+    expect(mockPrisma.recipe.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the full unfiltered batch when the AI ignores maxCookTimeMinutes for every recipe", async () => {
+    mockPrisma.pantryItem.findMany.mockResolvedValue(pantryItems);
+    mockGenerateJson.mockResolvedValue(
+      JSON.stringify({ recipes: [{ ...validAiResponse.recipes[0], cookTimeMinutes: 45 }] }),
+    );
+    mockPrisma.recipe.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
+      id: "recipe-1",
+      ...data,
+      ingredients: (data.ingredients as { create: Record<string, unknown>[] }).create,
+    }));
+
+    const recipes = await generateRecipes(USER_ID, { maxCookTimeMinutes: 20 });
+
+    // Showing the (imperfect) recipe beats showing nothing — the real cook time is still
+    // visible on the card, so the user isn't misled, just not perfectly filtered.
+    expect(recipes).toHaveLength(1);
+    expect(recipes[0].cookTimeMinutes).toBe(45);
   });
 
   it("returns a cached batch and never calls Gemini when the pantry is unchanged", async () => {

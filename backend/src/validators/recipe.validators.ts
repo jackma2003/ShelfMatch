@@ -11,7 +11,11 @@ export const aiRecipeSchema = z.object({
     .array(
       z.object({
         name: z.string().min(1).max(100),
-        quantity: z.number().positive(),
+        // nonnegative rather than positive — the AI is asked to always send a positive
+        // placeholder (see the prompt), but a "to taste" seasoning legitimately has no
+        // meaningful quantity, and models occasionally send 0 for those despite the prompt.
+        // Rejecting the whole batch over that one harmless field isn't worth it.
+        quantity: z.number().nonnegative(),
         unit: z.string().min(1).max(20),
         isOptional: z.boolean().default(false),
       }),

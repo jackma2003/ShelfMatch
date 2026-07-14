@@ -48,6 +48,13 @@ function isTimeoutError(error: unknown): boolean {
   return error instanceof ApiError && error.status === 504;
 }
 
+// The free tier caps at a small number of requests per day, shared across every user of this
+// deployment (it's keyed by API project, not by our app's own per-user rate limiter) — so it's
+// realistic to hit this outside of any abuse scenario, just from normal testing/usage.
+function isRateLimitError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 429;
+}
+
 export async function generateJson(prompt: string): Promise<string> {
   const ai = getGeminiClient();
 
@@ -71,6 +78,24 @@ export async function generateJson(prompt: string): Promise<string> {
     } catch (error) {
       if (isTimeoutError(error)) {
         throw new HttpError(504, "AI service took too long to respond", "AI_TIMEOUT");
+      }
+      if (isRateLimitError(error)) {
+        // Never retried — hammering a RESOURCE_EXHAUSTED response only digs the quota hole
+        // deeper. Logged with the SDK's own message since it carries the specific quota
+        // metric and reset window, useful when diagnosing this after the fact.
+        console.error("[gemini] rate/quota limit hit:", (error as ApiError).message);
+        throw new HttpError(
+          429,
+          "AI service is temporarily rate-limited. Please try again shortly.",
+          "AI_RATE_LIMITED",
+        );
+      }
+      if (error instanceof ApiError) {
+        // Any other API-level error (bad request, server error, etc.) — not retryable the way
+        // a dropped connection is, so surface it as a classified HttpError instead of letting
+        // an unrecognized exception fall through to the generic 500 handler.
+        console.error("[gemini] API error:", error.status, error.message);
+        throw new HttpError(502, "AI service request failed", "AI_REQUEST_FAILED");
       }
       if (!isRetryableNetworkError(error) || attempt === MAX_ATTEMPTS) {
         throw error;

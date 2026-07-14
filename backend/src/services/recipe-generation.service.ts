@@ -49,10 +49,12 @@ function buildPrompt(
 
   const filterInstructions: string[] = [];
   if (filters.maxCookTimeMinutes) {
-    filterInstructions.push(`Keep total cook time under ${filters.maxCookTimeMinutes} minutes.`);
+    filterInstructions.push(
+      `Keep total cook time under ${filters.maxCookTimeMinutes} minutes — this is a hard limit, not a suggestion.`,
+    );
   }
   if (filters.dietaryTag) {
-    filterInstructions.push(`Every recipe must be ${filters.dietaryTag}.`);
+    filterInstructions.push(`Every recipe must be strictly ${filters.dietaryTag} — no exceptions.`);
   }
 
   return `You are a practical home cooking assistant. A user has the following ingredients in their kitchen:
@@ -79,7 +81,9 @@ Respond with ONLY valid JSON (no markdown code fences, no commentary) matching e
       ]
     }
   ]
-}`;
+}
+Every ingredient "quantity" must be a positive number, even for a "to taste" seasoning — use a
+placeholder like 1 with unit "to taste" rather than 0 or a non-numeric value.`;
 }
 
 // Looked up for every recipe in parallel (not one-by-one) so the added latency is bounded by
@@ -118,6 +122,84 @@ async function persistRecipe(recipe: AiRecipe, imageUrl: string) {
   });
 }
 
+// Bounded at 2 total attempts (1 retry): each attempt is a real, quota-consuming Gemini call
+// on this project's tight free-tier daily cap, so this trades a little extra cost for turning
+// a transient shape mistake (LLM output is inherently non-deterministic) into a success instead
+// of a hard failure — without retrying forever against a persistently broken prompt.
+const MAX_GENERATION_ATTEMPTS = 2;
+
+async function requestAiRecipes(prompt: string): Promise<AiRecipe[]> {
+  let lastErrorDescription = "";
+
+  for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
+    const attemptPrompt =
+      attempt === 1
+        ? prompt
+        : `${prompt}\n\nYour previous response was rejected for this reason: ${lastErrorDescription}\nReturn ONLY corrected JSON matching the exact shape above.`;
+
+    const rawText = await generateJson(attemptPrompt);
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(rawText);
+    } catch {
+      console.error(
+        `[recipe-generation] attempt ${attempt}/${MAX_GENERATION_ATTEMPTS}: Gemini returned malformed JSON:`,
+        rawText.slice(0, 2000),
+      );
+      if (attempt === MAX_GENERATION_ATTEMPTS) {
+        throw new HttpError(502, "AI service returned malformed JSON", "AI_INVALID_JSON");
+      }
+      lastErrorDescription = "The response was not valid JSON.";
+      continue;
+    }
+
+    const result = aiRecipesResponseSchema.safeParse(parsed);
+    if (!result.success) {
+      const issueSummary = result.error.issues
+        .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+        .join("; ");
+      console.error(
+        `[recipe-generation] attempt ${attempt}/${MAX_GENERATION_ATTEMPTS}: Gemini response failed schema validation — ${issueSummary}`,
+        `rawText: ${rawText.slice(0, 2000)}`,
+      );
+      if (attempt === MAX_GENERATION_ATTEMPTS) {
+        throw new HttpError(502, "AI service response didn't match the expected format", "AI_INVALID_SHAPE");
+      }
+      lastErrorDescription = issueSummary;
+      continue;
+    }
+
+    return result.data.recipes;
+  }
+
+  // Unreachable — the loop above always returns or throws — but keeps TypeScript satisfied.
+  throw new HttpError(502, "AI service request failed", "AI_REQUEST_FAILED");
+}
+
+// maxCookTimeMinutes is the one filter we can mechanically verify (unlike dietaryTag, which
+// would need unreliable ingredient-keyword matching to check). The AI is instructed to respect
+// it, but instructions aren't guarantees, so this is a real backstop rather than blind trust.
+// If every recipe in the batch ignores it, fall back to the unfiltered set — an imperfect
+// match beats an empty result, and the actual cook time is always visible on the recipe card.
+function enforceMaxCookTime(recipes: AiRecipe[], maxCookTimeMinutes: number | undefined): AiRecipe[] {
+  if (!maxCookTimeMinutes) return recipes;
+
+  const compliant = recipes.filter((recipe) => recipe.cookTimeMinutes <= maxCookTimeMinutes);
+  if (compliant.length === 0) {
+    console.warn(
+      `[recipe-generation] AI ignored maxCookTimeMinutes=${maxCookTimeMinutes} for every recipe in the batch (got: ${recipes.map((r) => r.cookTimeMinutes).join(", ")}); returning the unfiltered batch instead of an empty result.`,
+    );
+    return recipes;
+  }
+  if (compliant.length < recipes.length) {
+    console.warn(
+      `[recipe-generation] Dropped ${recipes.length - compliant.length}/${recipes.length} recipe(s) exceeding maxCookTimeMinutes=${maxCookTimeMinutes}.`,
+    );
+  }
+  return compliant;
+}
+
 async function getCachedBatch(userId: string, pantryHash: string) {
   const batch = await prisma.recipeGenerationBatch.findFirst({
     where: { userId, pantryHash, createdAt: { gte: new Date(Date.now() - CACHE_TTL_MS) } },
@@ -152,24 +234,10 @@ export async function generateRecipes(userId: string, filters: GenerateRecipesIn
   }
 
   const prompt = buildPrompt(pantryItems, filters);
-  const rawText = await generateJson(prompt);
+  const aiRecipes = enforceMaxCookTime(await requestAiRecipes(prompt), filters.maxCookTimeMinutes);
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(rawText);
-  } catch {
-    throw new HttpError(502, "AI service returned malformed JSON", "AI_INVALID_JSON");
-  }
-
-  const result = aiRecipesResponseSchema.safeParse(parsed);
-  if (!result.success) {
-    throw new HttpError(502, "AI service response didn't match the expected format", "AI_INVALID_SHAPE");
-  }
-
-  const imageUrls = await resolveRecipeImages(result.data.recipes);
-  const persisted = await Promise.all(
-    result.data.recipes.map((recipe, i) => persistRecipe(recipe, imageUrls[i])),
-  );
+  const imageUrls = await resolveRecipeImages(aiRecipes);
+  const persisted = await Promise.all(aiRecipes.map((recipe, i) => persistRecipe(recipe, imageUrls[i])));
 
   await prisma.recipeGenerationBatch.create({
     data: { userId, pantryHash: requestHash, recipeIds: persisted.map((recipe) => recipe.id) },
