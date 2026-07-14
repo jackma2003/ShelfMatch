@@ -102,7 +102,7 @@ export function SignupForm() {
             )}
           </div>
           {signup.isError && (
-            <p className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
+            <p className="bg-destructive/10 text-destructive animate-fade-in rounded-lg px-3 py-2 text-sm">
               {signup.error instanceof ApiError ? signup.error.message : "Something went wrong"}
             </p>
           )}

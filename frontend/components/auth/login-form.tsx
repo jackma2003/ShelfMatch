@@ -43,7 +43,7 @@ export function LoginForm() {
       </CardHeader>
       <CardContent className="space-y-5">
         {invalidTokenRedirect && !login.isError && (
-          <p className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
+          <p className="bg-destructive/10 text-destructive animate-fade-in rounded-lg px-3 py-2 text-sm">
             That verification link is invalid or has expired. Request a new one below by trying to
             log in.
           </p>
@@ -76,7 +76,7 @@ export function LoginForm() {
             )}
           </div>
           {login.isError && (
-            <div className="space-y-2">
+            <div className="animate-fade-in space-y-2">
               <p className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
                 {login.error instanceof ApiError ? login.error.message : "Something went wrong"}
               </p>

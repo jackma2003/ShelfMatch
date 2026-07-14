@@ -43,7 +43,7 @@ export function ProfileForm({ user }: { user: User }) {
             {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
           </div>
           {updateProfile.isError && (
-            <p className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
+            <p className="bg-destructive/10 text-destructive animate-fade-in rounded-lg px-3 py-2 text-sm">
               {updateProfile.error instanceof ApiError
                 ? updateProfile.error.message
                 : "Something went wrong"}
