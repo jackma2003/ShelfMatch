@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ChefHat, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -19,6 +22,14 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
     ? Math.round((recipe.matchedCount / recipe.totalCount) * 100)
     : 0;
   const difficulty = DIFFICULTY_CONFIG[recipe.difficulty];
+
+  // Starts at 0 and animates up to the real value on mount, so the match bar reads as a
+  // "reveal" of how well the recipe fits the pantry rather than a static, already-filled stat.
+  const [displayPercent, setDisplayPercent] = useState(0);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDisplayPercent(matchPercent));
+    return () => cancelAnimationFrame(id);
+  }, [matchPercent]);
 
   return (
     <Link href={`/recipes/${recipe.id}`} className="group block h-full">
@@ -61,10 +72,10 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
               <div className="bg-muted h-1.5 overflow-hidden rounded-full">
                 <div
                   className={cn(
-                    "h-full rounded-full transition-all",
+                    "h-full rounded-full transition-[width] duration-700 ease-out",
                     fullMatch ? "bg-success" : "bg-primary",
                   )}
-                  style={{ width: `${matchPercent}%` }}
+                  style={{ width: `${displayPercent}%` }}
                 />
               </div>
             </div>

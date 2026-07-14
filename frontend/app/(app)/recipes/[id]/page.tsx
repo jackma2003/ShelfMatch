@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { AddMissingButton } from "@/components/recipes/add-missing-button";
 import { SaveRecipeButton } from "@/components/recipes/save-recipe-button";
@@ -23,6 +24,18 @@ export default function RecipeDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { data: recipe, isLoading, isError } = useRecipe(params.id);
+
+  // Starts at 0 and animates up to the real value on mount (hooks must run before the
+  // early returns below), so the match bar reads as a "reveal" rather than a static stat.
+  const matchPercent =
+    recipe && recipe.totalCount > 0
+      ? Math.round((recipe.matchedCount / recipe.totalCount) * 100)
+      : 0;
+  const [displayPercent, setDisplayPercent] = useState(0);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDisplayPercent(matchPercent));
+    return () => cancelAnimationFrame(id);
+  }, [matchPercent]);
 
   if (isLoading) {
     return (
@@ -72,8 +85,6 @@ export default function RecipeDetailPage() {
 
   const difficulty = DIFFICULTY_CONFIG[recipe.difficulty];
   const fullMatch = recipe.matchedCount === recipe.totalCount;
-  const matchPercent =
-    recipe.totalCount > 0 ? Math.round((recipe.matchedCount / recipe.totalCount) * 100) : 0;
 
   return (
     <main className="mx-auto max-w-2xl space-y-8 px-6 py-10">
@@ -117,8 +128,11 @@ export default function RecipeDetailPage() {
         {/* Match bar */}
         <div className="bg-muted h-2 overflow-hidden rounded-full">
           <div
-            className={cn("h-full rounded-full", fullMatch ? "bg-success" : "bg-primary")}
-            style={{ width: `${matchPercent}%` }}
+            className={cn(
+              "h-full rounded-full transition-[width] duration-700 ease-out",
+              fullMatch ? "bg-success" : "bg-primary",
+            )}
+            style={{ width: `${displayPercent}%` }}
           />
         </div>
 

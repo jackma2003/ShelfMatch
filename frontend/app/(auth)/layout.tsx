@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { PageTransition } from "@/components/layout/page-transition";
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -15,7 +17,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       >
         <img src="/icon.svg" className="size-7" alt="ShelfMatch" /> ShelfMatch
       </Link>
-      {children}
+      <PageTransition>{children}</PageTransition>
     </div>
   );
 }

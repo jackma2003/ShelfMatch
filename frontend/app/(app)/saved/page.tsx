@@ -93,8 +93,14 @@ export default function SavedRecipesPage() {
       {/* Recipe list */}
       {savedRecipes && savedRecipes.length > 0 && (
         <div className="space-y-3">
-          {savedRecipes.map((saved) => (
-            <SavedRecipeCard key={saved.id} savedRecipe={saved} />
+          {savedRecipes.map((saved, i) => (
+            <div
+              key={saved.id}
+              className="animate-fade-in"
+              style={{ animationDelay: `${Math.min(i * 60, 300)}ms` }}
+            >
+              <SavedRecipeCard savedRecipe={saved} />
+            </div>
           ))}
         </div>
       )}

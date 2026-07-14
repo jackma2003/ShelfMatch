@@ -133,8 +133,13 @@ export function PantryList({ sortExpiring }: { sortExpiring: boolean }) {
   if (sortExpiring) {
     return (
       <Card className="gap-0 px-4 py-0">
-        {items.map((item) => (
-          <PantryItemRow key={item.id} item={item} />
+        {items.map((item, i) => (
+          <PantryItemRow
+            key={item.id}
+            item={item}
+            className="animate-fade-in"
+            style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
+          />
         ))}
       </Card>
     );
@@ -142,8 +147,14 @@ export function PantryList({ sortExpiring }: { sortExpiring: boolean }) {
 
   return (
     <div className="space-y-5">
-      {groupByCategory(items).map(([category, categoryItems]) => (
-        <ItemGroup key={category} category={category} items={categoryItems} />
+      {groupByCategory(items).map(([category, categoryItems], i) => (
+        <div
+          key={category}
+          className="animate-fade-in"
+          style={{ animationDelay: `${Math.min(i * 70, 300)}ms` }}
+        >
+          <ItemGroup category={category} items={categoryItems} />
+        </div>
       ))}
     </div>
   );

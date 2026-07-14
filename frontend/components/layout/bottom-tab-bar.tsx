@@ -31,7 +31,12 @@ export function BottomTabBar() {
             aria-current={active ? "page" : undefined}
             className="focus-visible:ring-ring/50 flex min-h-[56px] min-w-[64px] flex-1 flex-col items-center justify-center gap-0.5 rounded-t-lg py-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none"
           >
-            <tab.icon className={cn("size-5", active ? "text-primary" : "text-muted-foreground")} />
+            <tab.icon
+              className={cn(
+                "size-5",
+                active ? "text-primary animate-tab-bounce" : "text-muted-foreground",
+              )}
+            />
             <span className={active ? "text-primary" : "text-muted-foreground"}>{tab.label}</span>
           </Link>
         );

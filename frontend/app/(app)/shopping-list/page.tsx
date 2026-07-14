@@ -179,8 +179,13 @@ export default function ShoppingListPage() {
                   {groupName}
                 </h3>
                 <Card className="gap-0 px-4 py-0">
-                  {groupItems.map((item) => (
-                    <ShoppingListItemRow key={item.id} item={item} />
+                  {groupItems.map((item, i) => (
+                    <ShoppingListItemRow
+                      key={item.id}
+                      item={item}
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
+                    />
                   ))}
                 </Card>
               </div>

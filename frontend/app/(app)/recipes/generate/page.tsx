@@ -273,8 +273,14 @@ export default function GenerateRecipesPage() {
             </div>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
-            {displayedRecipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
+            {displayedRecipes.map((recipe, i) => (
+              <div
+                key={recipe.id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${Math.min(i * 70, 350)}ms` }}
+              >
+                <RecipeCard recipe={recipe} />
+              </div>
             ))}
           </div>
         </div>
