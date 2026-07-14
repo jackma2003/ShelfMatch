@@ -49,11 +49,11 @@ export function ShoppingListItemRow({
                 onChange={(e) =>
                   updateItem.mutate({ id: item.id, input: { isChecked: e.target.checked } })
                 }
-                className="peer border-border checked:border-primary checked:bg-primary size-[18px] cursor-pointer appearance-none rounded-md border-2 transition-all"
+                className="peer border-border checked:border-primary checked:bg-primary size-4.5 cursor-pointer appearance-none rounded-md border-2 transition-all"
               />
               {/* checkmark */}
               <svg
-                className="pointer-events-none absolute inset-0 size-[18px] scale-0 text-white transition-transform peer-checked:scale-100"
+                className="pointer-events-none absolute inset-0 size-4.5 scale-0 text-white transition-transform peer-checked:scale-100"
                 viewBox="0 0 18 18"
                 fill="none"
               >

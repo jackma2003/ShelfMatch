@@ -19,7 +19,9 @@ import {
   useUnsaveRecipe,
   useUpdateSavedRecipeStatus,
   type SavedRecipe,
+  type SavedRecipeStatus,
 } from "@/hooks/use-saved-recipes";
+import { cn } from "@/lib/utils";
 
 const STATUS_CONFIG = {
   FAVORITE: { label: "Favorite", icon: Heart, variant: "favorite" as const },
@@ -31,6 +33,7 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
   const updateStatus = useUpdateSavedRecipeStatus();
   const unsave = useUnsaveRecipe();
   const [removing, setRemoving] = useState(false);
+  const [statusPop, setStatusPop] = useState(false);
   const { recipe } = savedRecipe;
   const statusCfg = STATUS_CONFIG[savedRecipe.status as keyof typeof STATUS_CONFIG];
   const hasMatchInfo = typeof recipe.totalCount === "number" && recipe.totalCount > 0;
@@ -39,6 +42,10 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
   const handleUnsave = () => {
     setRemoving(true);
     unsave.mutate(savedRecipe, { onError: () => setRemoving(false) });
+  };
+
+  const handleStatusChange = (status: SavedRecipeStatus) => {
+    updateStatus.mutate({ id: savedRecipe.id, status }, { onSuccess: () => setStatusPop(true) });
   };
 
   return (
@@ -78,7 +85,11 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
                 </Badge>
               )}
               {statusCfg && (
-                <Badge variant={statusCfg.variant}>
+                <Badge
+                  variant={statusCfg.variant}
+                  className={cn(statusPop && "animate-badge-pop")}
+                  onAnimationEnd={() => setStatusPop(false)}
+                >
                   <statusCfg.icon /> {statusCfg.label}
                 </Badge>
               )}
@@ -90,10 +101,10 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
             <Select
               value={savedRecipe.status}
               onValueChange={(status) => {
-                if (status) updateStatus.mutate({ id: savedRecipe.id, status });
+                if (status) handleStatusChange(status);
               }}
             >
-              <SelectTrigger size="sm" className="w-auto min-w-[100px]">
+              <SelectTrigger size="sm" className="w-auto min-w-25">
                 <SelectValue>
                   {(value: string | null) =>
                     value

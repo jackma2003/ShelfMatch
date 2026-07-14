@@ -8,6 +8,7 @@ import { RecipeCard } from "@/components/recipes/recipe-card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FilterButton } from "@/components/ui/filter-button";
+import { SparkleBurst } from "@/components/ui/sparkle-burst";
 import { type DietaryTag, type Recipe, useGenerateRecipes } from "@/hooks/use-recipes";
 import { ApiError } from "@/lib/api-client";
 
@@ -176,7 +177,13 @@ export default function GenerateRecipesPage() {
           className="shrink-0 gap-2"
           size="lg"
         >
-          <Sparkles className="size-4" />
+          <span className="relative inline-flex">
+            <Sparkles className="size-4" />
+            {/* Keyed by generationCount so it only plays for an active click-through-generate
+                in this session — reloading with cached results from localStorage leaves
+                generate.isSuccess false, so it never replays on a plain page load. */}
+            {generate.isSuccess && <SparkleBurst key={generationCount} />}
+          </span>
           {generate.isPending ? "Thinking..." : "Generate meals"}
         </Button>
       </div>
@@ -206,7 +213,7 @@ export default function GenerateRecipesPage() {
 
       {/* Error state */}
       {generate.isError && (
-        <div className="bg-destructive/10 space-y-2 rounded-lg px-3 py-2">
+        <div className="bg-destructive/10 animate-fade-in space-y-2 rounded-lg px-3 py-2">
           <p className="text-destructive text-sm font-medium">{errorMessage}</p>
           {generate.error instanceof ApiError && generate.error.code === "EMPTY_PANTRY" && (
             <Link
@@ -257,7 +264,7 @@ export default function GenerateRecipesPage() {
           </div>
 
           {filtersChanged && (
-            <div className="bg-primary/10 flex flex-wrap items-center justify-between gap-3 rounded-lg px-3 py-2">
+            <div className="bg-primary/10 animate-fade-in flex flex-wrap items-center justify-between gap-3 rounded-lg px-3 py-2">
               <p className="text-primary text-sm font-medium">
                 These results are from before you changed filters.
               </p>

@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, ShoppingCart } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -17,6 +18,7 @@ import {
   type ShoppingListItem,
 } from "@/hooks/use-shopping-list";
 import { ApiError } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 
 const manualAddSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -56,6 +58,19 @@ export default function ShoppingListPage() {
 
   const checkedCount = items?.filter((i) => i.isChecked).length ?? 0;
   const totalCount = items?.length ?? 0;
+
+  // Pops the counter on any change *after* the list has first loaded — not on the initial
+  // load itself, which would otherwise pop the moment real data replaces the loading state
+  // even though the user didn't just do anything.
+  const [countPop, setCountPop] = useState(false);
+  const prevCheckedRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!items) return;
+    if (prevCheckedRef.current !== null && prevCheckedRef.current !== checkedCount) {
+      setCountPop(true);
+    }
+    prevCheckedRef.current = checkedCount;
+  }, [items, checkedCount]);
 
   return (
     <main className="mx-auto max-w-2xl space-y-8 px-6 py-10">
@@ -108,7 +123,7 @@ export default function ShoppingListPage() {
               {errors.unit && <p className="text-destructive text-sm">{errors.unit.message}</p>}
             </div>
             {addItem.isError && (
-              <p className="bg-destructive/10 text-destructive col-span-2 rounded-lg px-3 py-2 text-sm">
+              <p className="bg-destructive/10 text-destructive animate-fade-in col-span-2 rounded-lg px-3 py-2 text-sm">
                 {addItem.error instanceof ApiError ? addItem.error.message : "Something went wrong"}
               </p>
             )}
@@ -126,7 +141,10 @@ export default function ShoppingListPage() {
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Your list</h2>
           {totalCount > 0 && (
-            <span className="text-muted-foreground text-sm">
+            <span
+              className={cn("text-muted-foreground text-sm", countPop && "animate-count-pop")}
+              onAnimationEnd={() => setCountPop(false)}
+            >
               {checkedCount}/{totalCount} checked
             </span>
           )}

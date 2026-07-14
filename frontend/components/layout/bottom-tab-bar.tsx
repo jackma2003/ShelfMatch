@@ -29,7 +29,7 @@ export function BottomTabBar() {
             key={tab.href}
             href={tab.href}
             aria-current={active ? "page" : undefined}
-            className="focus-visible:ring-ring/50 flex min-h-[56px] min-w-[64px] flex-1 flex-col items-center justify-center gap-0.5 rounded-t-lg py-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none"
+            className="focus-visible:ring-ring/50 flex min-h-14 min-w-16 flex-1 flex-col items-center justify-center gap-0.5 rounded-t-lg py-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none"
           >
             <tab.icon
               className={cn(

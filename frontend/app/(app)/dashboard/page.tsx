@@ -60,7 +60,7 @@ function DashboardContent() {
   return (
     <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
       {justVerified && !bannerDismissed && (
-        <div className="flex items-center justify-between rounded-xl border border-green-600/20 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="animate-fade-in flex items-center justify-between rounded-xl border border-green-600/20 bg-green-50 px-4 py-3 text-sm text-green-700">
           <span>🎉 Email verified — welcome to ShelfMatch!</span>
           <Button
             variant="ghost"

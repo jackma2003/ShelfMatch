@@ -23,7 +23,7 @@ function EmptyState({
         className,
       )}
     >
-      {Icon && <Icon className="text-muted-foreground size-8" />}
+      {Icon && <Icon className="text-muted-foreground animate-pop-in size-8" />}
       <div className="space-y-1">
         <p className="font-medium">{title}</p>
         {description && (

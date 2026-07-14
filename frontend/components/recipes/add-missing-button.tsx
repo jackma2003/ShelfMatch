@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useAddMissingFromRecipe } from "@/hooks/use-shopping-list";
+import { cn } from "@/lib/utils";
 
 export function AddMissingButton({ recipeId }: { recipeId: string }) {
   const addMissing = useAddMissingFromRecipe();
+  const [flash, setFlash] = useState(false);
 
   // Client-side navigation between two recipe detail pages can reuse this component
   // instance without remounting it, which would otherwise leave last recipe's
@@ -21,7 +23,9 @@ export function AddMissingButton({ recipeId }: { recipeId: string }) {
       variant="outline"
       size="sm"
       disabled={addMissing.isPending}
-      onClick={() => addMissing.mutate(recipeId)}
+      className={cn(flash && "animate-flash-success")}
+      onAnimationEnd={() => setFlash(false)}
+      onClick={() => addMissing.mutate(recipeId, { onSuccess: () => setFlash(true) })}
     >
       {addMissing.isPending
         ? "Adding..."
