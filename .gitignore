@@ -1,3 +1,6 @@
+# Dependencies (root-level dev tooling only; frontend/backend have their own)
+node_modules/
+
 # OS
 .DS_Store
 
