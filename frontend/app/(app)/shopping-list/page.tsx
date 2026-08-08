@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, ShoppingCart } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { motion } from "framer-motion";
 import { z } from "zod";
 
 import { ShoppingListItemRow } from "@/components/recipes/shopping-list-item-row";
@@ -18,6 +19,8 @@ import {
   type ShoppingListItem,
 } from "@/hooks/use-shopping-list";
 import { ApiError } from "@/lib/api-client";
+import { celebrate } from "@/lib/celebrate";
+import { playClick } from "@/lib/sound";
 import { cn } from "@/lib/utils";
 
 const manualAddSchema = z.object({
@@ -53,6 +56,7 @@ export default function ShoppingListPage() {
   });
 
   const onSubmit = (values: ManualAddValues) => {
+    playClick();
     addItem.mutate(values, { onSuccess: () => reset({ name: "", quantity: "", unit: "" }) });
   };
 
@@ -61,22 +65,28 @@ export default function ShoppingListPage() {
 
   // Pops the counter on any change *after* the list has first loaded — not on the initial
   // load itself, which would otherwise pop the moment real data replaces the loading state
-  // even though the user didn't just do anything.
-  const [countPop, setCountPop] = useState(false);
+  // even though the user didn't just do anything. Also celebrates the moment the list first
+  // reaches 100% checked (not on every render while it stays at 100% — guarded by comparing
+  // against the *previous* count so re-checking an already-complete list doesn't re-fire it).
+  const [countPopKey, setCountPopKey] = useState(0);
   const prevCheckedRef = useRef<number | null>(null);
   useEffect(() => {
     if (!items) return;
-    if (prevCheckedRef.current !== null && prevCheckedRef.current !== checkedCount) {
-      setCountPop(true);
+    const prevChecked = prevCheckedRef.current;
+    if (prevChecked !== null && prevChecked !== checkedCount) {
+      setCountPopKey((k) => k + 1);
+      if (totalCount > 0 && checkedCount === totalCount && prevChecked < totalCount) {
+        celebrate();
+      }
     }
     prevCheckedRef.current = checkedCount;
-  }, [items, checkedCount]);
+  }, [items, checkedCount, totalCount]);
 
   return (
     <main className="mx-auto max-w-2xl space-y-8 px-6 py-10">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Shopping list</h1>
+        <h1 className="font-heading text-2xl tracking-tight">Shopping list</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           Add items manually or let ShelfMatch add missing recipe ingredients for you.
         </p>
@@ -85,7 +95,7 @@ export default function ShoppingListPage() {
       {/* Add form */}
       <Card>
         <CardContent>
-          <h2 className="mb-5 font-semibold">Add an item</h2>
+          <h2 className="font-heading mb-5 font-semibold">Add an item</h2>
           <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-3">
             <div className="col-span-2 space-y-1.5">
               <Label htmlFor="sl-name">Name</Label>
@@ -139,14 +149,22 @@ export default function ShoppingListPage() {
       {/* List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold">Your list</h2>
+          <h2 className="font-heading font-semibold">Your list</h2>
           {totalCount > 0 && (
-            <span
-              className={cn("text-muted-foreground text-sm", countPop && "animate-count-pop")}
-              onAnimationEnd={() => setCountPop(false)}
+            <motion.span
+              key={countPopKey}
+              initial={countPopKey > 0 ? { scale: 1.25 } : false}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", bounce: 0.6, duration: 0.35 }}
+              className={cn(
+                "text-sm",
+                checkedCount === totalCount
+                  ? "text-success font-semibold"
+                  : "text-muted-foreground",
+              )}
             >
               {checkedCount}/{totalCount} checked
-            </span>
+            </motion.span>
           )}
         </div>
 

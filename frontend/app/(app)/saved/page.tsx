@@ -30,7 +30,7 @@ export default function SavedRecipesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Saved recipes</h1>
+          <h1 className="font-heading text-2xl tracking-tight">Saved recipes</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Your collection of favorites, planned meals, and things you&apos;ve cooked.
           </p>

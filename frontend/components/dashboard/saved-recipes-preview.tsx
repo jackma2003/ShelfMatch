@@ -18,7 +18,7 @@ export function SavedRecipesPreview() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold">Saved recipes</h2>
+        <h2 className="font-heading text-base font-semibold">Saved recipes</h2>
         {preview.length > 0 && (
           <Link
             href="/saved"

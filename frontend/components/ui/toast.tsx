@@ -31,7 +31,7 @@ function ToastRoot({ className, toast, ...props }: ToastPrimitive.Root.Props) {
       data-slot="toast"
       toast={toast}
       className={cn(
-        "bg-popover text-popover-foreground ring-foreground/10 shadow-foreground/5 data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-2 data-closed:animate-out data-closed:fade-out-0 relative w-full rounded-xl p-4 pr-9 text-sm shadow-lg ring-1 transition-all data-ending-style:translate-y-1 data-ending-style:opacity-0",
+        "bg-popover text-popover-foreground border-border shadow-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-2 data-closed:animate-out data-closed:fade-out-0 relative w-full rounded-xl border-2 p-4 pr-9 text-sm shadow-lg transition-all data-ending-style:translate-y-1 data-ending-style:opacity-0 data-open:duration-300 data-open:ease-[cubic-bezier(0.34,1.56,0.64,1)]",
         className,
       )}
       {...props}

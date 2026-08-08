@@ -11,6 +11,7 @@ import { FilterButton } from "@/components/ui/filter-button";
 import { SparkleBurst } from "@/components/ui/sparkle-burst";
 import { type DietaryTag, type Recipe, useGenerateRecipes } from "@/hooks/use-recipes";
 import { ApiError } from "@/lib/api-client";
+import { playClick } from "@/lib/sound";
 
 const STORAGE_KEY = "shelfmatch:generated-recipes";
 
@@ -149,6 +150,7 @@ export default function GenerateRecipesPage() {
       : "Something went wrong";
 
   const handleGenerate = () => {
+    playClick();
     setGenerationCount((count) => count + 1);
     const filters: GenerationFilters = { quickOnly, dietaryTag };
     generate.mutate(
@@ -168,7 +170,7 @@ export default function GenerateRecipesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">What can I make?</h1>
+          <h1 className="font-heading text-2xl tracking-tight">What can I make?</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             ShelfMatch will suggest meals based on what&apos;s in your pantry.
           </p>

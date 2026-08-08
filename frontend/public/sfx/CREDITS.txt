@@ -1,0 +1,10 @@
+Sound effects sourced from Kenney.nl (https://kenney.nl), released under CC0 1.0 Universal
+(public domain — no attribution required, credited here as good practice).
+
+- click.wav   — Kenney "Interface Sounds" pack (click1.wav)
+- toggle.wav  — Kenney "Interface Sounds" pack (switch1.wav)
+- success.ogg — Kenney "Digital Audio" pack (power_up_5.ogg)
+
+Retrieved via community mirrors that vendor Kenney's original CC0 files:
+- https://github.com/Calinou/kenney-ui-audio
+- https://github.com/Boyquotes/kenney-digital-audio-for-godot

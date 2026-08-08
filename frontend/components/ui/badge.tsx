@@ -17,6 +17,8 @@ const badgeVariants = cva(
         warning: "bg-primary/10 text-primary [a]:hover:bg-primary/20",
         favorite: "bg-favorite/10 text-favorite [a]:hover:bg-favorite/20",
         planned: "bg-planned/10 text-planned [a]:hover:bg-planned/20",
+        gold: "bg-gold text-foreground [a]:hover:brightness-105",
+        terracotta: "bg-terracotta/15 text-terracotta [a]:hover:bg-terracotta/25",
         muted: "bg-muted text-muted-foreground [a]:hover:bg-muted/70",
         outline: "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost: "hover:bg-muted hover:text-muted-foreground",

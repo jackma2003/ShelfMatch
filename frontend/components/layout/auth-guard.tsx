@@ -21,7 +21,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         className="flex min-h-screen flex-col items-center justify-center gap-3 p-4"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.94 0.04 70 / 0.5) 0%, transparent 60%)",
+            "radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in oklch, var(--gold), transparent 55%) 0%, transparent 60%)",
         }}
       >
         <img src="/icon.svg" className="size-8 animate-pulse" alt="" />

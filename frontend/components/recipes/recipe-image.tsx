@@ -65,11 +65,11 @@ export function RecipeImage({
   return (
     <div
       className={cn(
-        "from-primary/15 to-primary/5 flex items-center justify-center bg-linear-to-br",
+        "from-primary-glow/25 to-primary-glow/5 flex items-center justify-center bg-linear-to-br",
         className,
       )}
     >
-      <ChefHat className={cn("text-primary/40", iconClassName)} />
+      <ChefHat className={cn("text-primary-accent/50 animate-idle-bounce", iconClassName)} />
     </div>
   );
 }

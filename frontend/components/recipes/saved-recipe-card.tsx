@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CalendarClock, CheckCircle2, Clock, Heart, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -21,7 +22,7 @@ import {
   type SavedRecipe,
   type SavedRecipeStatus,
 } from "@/hooks/use-saved-recipes";
-import { cn } from "@/lib/utils";
+import { celebrate } from "@/lib/celebrate";
 
 const STATUS_CONFIG = {
   FAVORITE: { label: "Favorite", icon: Heart, variant: "favorite" as const },
@@ -33,7 +34,7 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
   const updateStatus = useUpdateSavedRecipeStatus();
   const unsave = useUnsaveRecipe();
   const [removing, setRemoving] = useState(false);
-  const [statusPop, setStatusPop] = useState(false);
+  const [statusPopKey, setStatusPopKey] = useState(0);
   const { recipe } = savedRecipe;
   const statusCfg = STATUS_CONFIG[savedRecipe.status as keyof typeof STATUS_CONFIG];
   const hasMatchInfo = typeof recipe.totalCount === "number" && recipe.totalCount > 0;
@@ -45,7 +46,15 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
   };
 
   const handleStatusChange = (status: SavedRecipeStatus) => {
-    updateStatus.mutate({ id: savedRecipe.id, status }, { onSuccess: () => setStatusPop(true) });
+    updateStatus.mutate(
+      { id: savedRecipe.id, status },
+      {
+        onSuccess: () => {
+          setStatusPopKey((k) => k + 1);
+          if (status === "COOKED") celebrate();
+        },
+      },
+    );
   };
 
   return (
@@ -56,7 +65,7 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
       style={{ gridTemplateRows: removing ? "0fr" : "1fr", opacity: removing ? 0 : 1 }}
     >
       <div className="overflow-hidden">
-        <Card className="group hover:ring-primary/30 flex-col gap-3 p-5 transition-all sm:flex-row sm:items-start">
+        <Card className="group hover:border-primary-accent flex-col gap-3 p-5 transition-colors sm:flex-row sm:items-start">
           <div className="shrink-0">
             <RecipeImage
               imageUrl={recipe.imageUrl}
@@ -68,7 +77,7 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
           <div className="min-w-0 flex-1 space-y-1">
             <Link
               href={`/recipes/${recipe.id}`}
-              className="hover:text-primary font-semibold transition-colors"
+              className="hover:text-primary-accent font-heading font-semibold transition-colors"
             >
               {recipe.title}
             </Link>
@@ -85,13 +94,17 @@ export function SavedRecipeCard({ savedRecipe }: { savedRecipe: SavedRecipe }) {
                 </Badge>
               )}
               {statusCfg && (
-                <Badge
-                  variant={statusCfg.variant}
-                  className={cn(statusPop && "animate-badge-pop")}
-                  onAnimationEnd={() => setStatusPop(false)}
+                <motion.span
+                  key={statusPopKey}
+                  initial={statusPopKey > 0 ? { scale: 1.4 } : false}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", bounce: 0.6, duration: 0.4 }}
+                  className="inline-flex"
                 >
-                  <statusCfg.icon /> {statusCfg.label}
-                </Badge>
+                  <Badge variant={statusCfg.variant}>
+                    <statusCfg.icon /> {statusCfg.label}
+                  </Badge>
+                </motion.span>
               )}
             </div>
           </div>

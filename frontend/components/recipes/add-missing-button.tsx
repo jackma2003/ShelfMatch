@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useAddMissingFromRecipe } from "@/hooks/use-shopping-list";
+import { playClick } from "@/lib/sound";
 import { cn } from "@/lib/utils";
 
 export function AddMissingButton({ recipeId }: { recipeId: string }) {
@@ -25,7 +26,10 @@ export function AddMissingButton({ recipeId }: { recipeId: string }) {
       disabled={addMissing.isPending}
       className={cn(flash && "animate-flash-success")}
       onAnimationEnd={() => setFlash(false)}
-      onClick={() => addMissing.mutate(recipeId, { onSuccess: () => setFlash(true) })}
+      onClick={() => {
+        playClick();
+        addMissing.mutate(recipeId, { onSuccess: () => setFlash(true) });
+      }}
     >
       {addMissing.isPending
         ? "Adding..."

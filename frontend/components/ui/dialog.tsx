@@ -52,7 +52,7 @@ function DialogContent({
         className={cn(
           // Mobile: bottom sheet (pinned to the bottom edge, square bottom corners, slides up).
           // sm+: the original centered, zoomed-in modal.
-          "bg-popover text-popover-foreground ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-10 data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom-10 sm:data-open:zoom-in-95 sm:data-open:slide-in-from-bottom-0 sm:data-closed:zoom-out-95 sm:data-closed:slide-out-to-bottom-0 fixed inset-x-0 bottom-0 z-50 grid max-h-[85dvh] w-full max-w-full gap-4 overflow-y-auto rounded-t-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-sm ring-1 duration-150 outline-none sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:max-w-sm sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:pb-4",
+          "bg-popover text-popover-foreground border-border data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-10 data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom-10 sm:data-open:zoom-in-95 sm:data-open:slide-in-from-bottom-0 sm:data-closed:zoom-out-95 sm:data-closed:slide-out-to-bottom-0 fixed inset-x-0 bottom-0 z-50 grid max-h-[85dvh] w-full max-w-full gap-4 overflow-y-auto rounded-t-2xl border-2 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-sm duration-200 outline-none data-open:ease-[cubic-bezier(0.34,1.56,0.64,1)] sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:max-w-sm sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:pb-4",
           className,
         )}
         {...props}

@@ -109,7 +109,7 @@ export default function RecipeDetailPage() {
       {/* Header */}
       <div className="space-y-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{recipe.title}</h1>
+          <h1 className="font-heading text-2xl tracking-tight">{recipe.title}</h1>
           <p className="text-muted-foreground mt-1.5 leading-relaxed">{recipe.description}</p>
         </div>
 
@@ -124,12 +124,12 @@ export default function RecipeDetailPage() {
           </Badge>
         </div>
 
-        {/* Match bar */}
-        <div className="bg-muted h-2 overflow-hidden rounded-full">
+        {/* Match bar — styled like a game XP bar */}
+        <div className="bg-muted border-border h-3 overflow-hidden rounded-full border-2">
           <div
             className={cn(
-              "h-full rounded-full transition-[width] duration-700 ease-out",
-              fullMatch ? "bg-success" : "bg-primary",
+              "h-full rounded-full bg-linear-to-b transition-[width] duration-700 ease-out",
+              fullMatch ? "from-success/80 to-success" : "from-gold/80 to-gold",
             )}
             style={{ width: `${displayPercent}%` }}
           />
@@ -144,7 +144,7 @@ export default function RecipeDetailPage() {
 
       {/* Ingredients */}
       <div className="space-y-3">
-        <h2 className="text-base font-semibold">Ingredients</h2>
+        <h2 className="font-heading text-base font-semibold">Ingredients</h2>
         <Card className="gap-0 divide-y py-0">
           {recipe.ingredients.map((ingredient) => (
             <div key={ingredient.id} className="flex items-center gap-3 px-4 py-2.5">
@@ -171,11 +171,11 @@ export default function RecipeDetailPage() {
 
       {/* Instructions */}
       <div className="space-y-3">
-        <h2 className="text-base font-semibold">Instructions</h2>
+        <h2 className="font-heading text-base font-semibold">Instructions</h2>
         <ol className="space-y-3">
           {recipe.instructions.map((step, i) => (
             <li key={i} className="flex gap-3">
-              <span className="bg-primary/10 text-primary mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+              <span className="bg-gold text-foreground font-heading mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs">
                 {i + 1}
               </span>
               <p className="text-foreground pt-0.5 text-sm leading-relaxed">{step}</p>

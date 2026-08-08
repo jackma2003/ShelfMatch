@@ -26,9 +26,9 @@ export default function Home() {
     <div className="flex flex-1 flex-col">
       {/* Nav strip */}
       <header className="flex items-center justify-between px-6 py-4">
-        <span className="flex items-center gap-2 text-lg font-bold">
-          <img src="/icon.svg" className="size-7" alt="ShelfMatch" />
-          <span className="text-primary">ShelfMatch</span>
+        <span className="flex items-center gap-2 text-lg">
+          <img src="/icon.svg" className="animate-idle-bounce size-7" alt="ShelfMatch" />
+          <span className="font-heading text-primary-accent">ShelfMatch</span>
         </span>
         <Button render={<Link href="/login" />} nativeButton={false} variant="outline" size="sm">
           Sign in
@@ -40,14 +40,15 @@ export default function Home() {
         className="flex flex-1 flex-col items-center justify-center px-6 py-20 text-center sm:py-28"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.94 0.04 70 / 0.7) 0%, transparent 70%)",
+            "radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in oklch, var(--gold), transparent 30%) 0%, transparent 70%)",
         }}
       >
         <p className="animate-in fade-in slide-in-from-bottom-2 text-muted-foreground mb-4 text-sm duration-700">
           A little side project — built for myself, now shared with you
         </p>
-        <h1 className="animate-in fade-in slide-in-from-bottom-3 max-w-xl text-4xl leading-tight font-extrabold tracking-tight delay-100 duration-700 sm:text-5xl md:text-6xl">
-          Turn what&apos;s already in your kitchen into <span className="text-primary">dinner</span>
+        <h1 className="animate-in fade-in slide-in-from-bottom-3 font-heading max-w-xl text-4xl leading-tight tracking-tight delay-100 duration-700 sm:text-5xl md:text-6xl">
+          Turn what&apos;s already in your kitchen into{" "}
+          <span className="text-primary-accent">dinner</span>
         </h1>
         <p className="animate-in fade-in slide-in-from-bottom-3 text-muted-foreground mt-5 max-w-md text-lg leading-relaxed delay-200 duration-700">
           I built ShelfMatch to answer one question every night: what can I actually cook with what
@@ -75,8 +76,8 @@ export default function Home() {
       {/* Story */}
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl">
-          <p className="text-primary mb-2 text-sm font-semibold">Why I made this</p>
-          <h2 className="mb-6 text-2xl font-bold sm:text-3xl">
+          <p className="text-terracotta mb-2 text-sm font-semibold">Why I made this</p>
+          <h2 className="font-heading mb-6 text-2xl sm:text-3xl">
             A project born from a very full, very confusing fridge.
           </h2>
           <div className="text-muted-foreground space-y-4 text-base leading-relaxed">
@@ -99,8 +100,10 @@ export default function Home() {
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
             {WHAT_IT_DOES.map((item) => (
               <div key={item.title} className="flex flex-col gap-2">
-                <item.icon className="text-primary size-5" />
-                <h3 className="text-sm font-semibold">{item.title}</h3>
+                <div className="bg-primary/10 flex size-9 items-center justify-center rounded-full">
+                  <item.icon className="text-primary-accent size-5" />
+                </div>
+                <h3 className="font-heading text-sm font-semibold">{item.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.description}</p>
               </div>
             ))}

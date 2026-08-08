@@ -8,6 +8,7 @@ import {
   useUpdateShoppingListItem,
   type ShoppingListItem,
 } from "@/hooks/use-shopping-list";
+import { playToggle } from "@/lib/sound";
 import { cn } from "@/lib/utils";
 
 export function ShoppingListItemRow({
@@ -46,9 +47,10 @@ export function ShoppingListItemRow({
               <input
                 type="checkbox"
                 checked={item.isChecked}
-                onChange={(e) =>
-                  updateItem.mutate({ id: item.id, input: { isChecked: e.target.checked } })
-                }
+                onChange={(e) => {
+                  playToggle();
+                  updateItem.mutate({ id: item.id, input: { isChecked: e.target.checked } });
+                }}
                 className="peer border-border checked:border-primary checked:bg-primary size-4.5 cursor-pointer appearance-none rounded-md border-2 transition-all"
               />
               {/* checkmark */}

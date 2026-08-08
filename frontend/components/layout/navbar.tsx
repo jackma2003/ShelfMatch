@@ -28,7 +28,9 @@ function NavLink({ href, label, onClick }: { href: string; label: string; onClic
       )}
     >
       {label}
-      {active && <span className="bg-primary mt-0.5 block h-0.5 rounded-full" />}
+      {active && (
+        <span className="bg-gold mt-0.5 block h-1 rounded-full shadow-[0_0_6px_var(--gold)]" />
+      )}
     </Link>
   );
 }
@@ -45,15 +47,15 @@ export function Navbar() {
   };
 
   return (
-    <header className="bg-background/90 sticky top-0 z-50 border-b backdrop-blur-md">
+    <header className="bg-card/95 border-border/70 sticky top-0 z-50 border-b-2 backdrop-blur-md">
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
         {/* Brand */}
         <Link
           href="/dashboard"
           className="flex items-center gap-2 text-base font-bold transition-opacity hover:opacity-80"
         >
-          <img src="/icon.svg" className="size-6" alt="ShelfMatch" />
-          <span className="text-primary">ShelfMatch</span>
+          <img src="/icon.svg" className="animate-idle-bounce size-6" alt="ShelfMatch" />
+          <span className="font-heading text-primary-accent">ShelfMatch</span>
         </Link>
 
         {/* Desktop links */}
